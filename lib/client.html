@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark-dimmed.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@14/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --bg: #191919;
+  --text: #d4d4d4;
+  --text-muted: #8b8b8b;
+  --text-dimmer: #555;
+  --accent: #d4a574;
+  --code-bg: #0d1117;
+  --border: #2a2a2a;
+  --input-bg: #2a2a2a;
+  --user-bubble: #2a2a2a;
+  --error: #e55;
+  --success: #4a9;
+  --sidebar-bg: #141414;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+/* --- Layout --- */
+#layout {
+  display: flex;
+  height: 100%;
+  height: 100dvh;
+}
+
+/* --- Sidebar --- */
+#sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#new-session-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+#new-session-btn:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+#session-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.session-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+  transition: background 0.15s;
+}
+
+.session-item:hover { background: rgba(255,255,255,0.05); }
+.session-item.active {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+
+.session-item .session-processing {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.2s infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* --- Sidebar overlay (mobile) --- */
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+
+#sidebar-overlay.visible { display: block; }
+
+/* --- Hamburger button --- */
+#hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* --- Main app area --- */
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* --- Header --- */
+#header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 10px) 20px 10px;
+  border-bottom: 1px solid var(--border);
+  min-height: 44px;
+}
+
+#header-left {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.project-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--error);
+  transition: background 0.3s;
+}
+
+.status-dot.connected { background: var(--success); }
+.status-dot.processing {
+  background: var(--accent);
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Messages area --- */
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 0 8px;
+}
+
+/* --- User message --- */
+.msg-user {
+  display: flex;
+  justify-content: flex-end;
+  max-width: 800px;
+  margin: 0 auto 14px;
+  padding: 0 20px;
+}
+
+.msg-user .bubble {
+  background: var(--user-bubble);
+  border-radius: 18px;
+  padding: 10px 16px;
+  max-width: 85%;
+  font-size: 15px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* --- Assistant message --- */
+.msg-assistant {
+  max-width: 800px;
+  margin: 0 auto 8px;
+  padding: 0 20px;
+}
+
+/* --- Markdown content --- */
+.md-content {
+  font-size: 15px;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+.md-content p { margin-bottom: 12px; }
+.md-content p:last-child { margin-bottom: 0; }
+
+.md-content h1, .md-content h2, .md-content h3,
+.md-content h4, .md-content h5, .md-content h6 {
+  margin: 20px 0 10px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.md-content h1 { font-size: 1.4em; }
+.md-content h2 { font-size: 1.2em; }
+.md-content h3 { font-size: 1.1em; }
+
+.md-content code {
+  background: rgba(255,255,255,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "SF Mono", Menlo, Monaco, "Cascadia Code", monospace;
+  font-size: 0.88em;
+}
+
+.md-content pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.md-content pre code {
+  display: block;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  background: none;
+  border-radius: 0;
+}
+
+.md-content strong { font-weight: 600; }
+.md-content em { font-style: italic; }
+
+.md-content a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.md-content a:hover { text-decoration: underline; }
+
+.md-content ul, .md-content ol {
+  padding-left: 24px;
+  margin: 8px 0;
+}
+.md-content li { margin-bottom: 4px; }
+
+.md-content blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 14px;
+  color: var(--text-muted);
+  margin: 10px 0;
+}
+
+.md-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.md-content table {
+  border-collapse: collapse;
+  margin: 12px 0;
+  width: 100%;
+  font-size: 14px;
+}
+.md-content th, .md-content td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+.md-content th {
+  background: rgba(255,255,255,0.04);
+  font-weight: 600;
+}
+
+/* --- Thinking --- */
+.thinking-item {
+  max-width: 800px;
+  margin: 4px auto;
+  padding: 0 20px;
+}
+
+.thinking-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+}
+
+.thinking-chevron {
+  font-size: 10px;
+  color: var(--text-dimmer);
+  transition: transform 0.2s;
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.thinking-item.expanded .thinking-chevron {
+  transform: rotate(90deg);
+}
+
+.thinking-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.thinking-duration {
+  font-style: normal;
+  color: var(--text-dimmer);
+  font-size: 12px;
+}
+
+.thinking-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text-muted);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.thinking-item.done .thinking-spinner { display: none; }
+
+.thinking-content {
+  display: none;
+  padding: 4px 0 8px 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.thinking-item.expanded .thinking-content { display: block; }
+
+/* --- Tool items --- */
+.tool-item {
+  max-width: 800px;
+  margin: 2px auto;
+  padding: 0 20px;
+}
+
+.tool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tool-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: pulse 1.2s infinite;
+}
+
+.tool-item.done .tool-bullet {
+  background: var(--success);
+  animation: none;
+}
+
+.tool-item.error .tool-bullet {
+  background: var(--error);
+  animation: none;
+}
+
+.tool-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.tool-desc {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tool-status-icon {
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.tool-status-icon .spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.tool-status-icon .check { color: var(--success); font-weight: bold; }
+.tool-status-icon .err-icon { color: var(--error); font-weight: bold; }
+
+.tool-subtitle {
+  display: flex;
+  gap: 6px;
+  padding: 0 0 4px 14px;
+  font-size: 12px;
+  color: var(--text-dimmer);
+  font-style: italic;
+  align-items: flex-start;
+}
+
+.tool-subtitle .tool-connector {
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  font-style: normal;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.tool-result-block {
+  margin: 4px 0 8px 0;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.tool-result-block.collapsed {
+  display: none;
+}
+
+.tool-result-block pre {
+  padding: 12px 14px;
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tool-result-block pre.is-error {
+  color: var(--error);
+}
+
+/* --- Turn metadata --- */
+.turn-meta {
+  max-width: 800px;
+  margin: 4px auto 16px;
+  padding: 0 20px;
+  font-size: 12px;
+  color: var(--text-dimmer);
+}
+
+/* --- System messages --- */
+.sys-msg {
+  max-width: 800px;
+  margin: 4px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.sys-msg .sys-text {
+  font-size: 12px;
+  color: var(--text-dimmer);
+  font-style: italic;
+}
+
+.sys-msg.error .sys-text { color: var(--error); }
+
+/* --- Inline activity indicator --- */
+.activity-inline {
+  max-width: 800px;
+  margin: 8px auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.activity-inline .activity-icon {
+  font-size: 16px;
+  animation: sparkle 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.activity-inline .activity-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Input area --- */
+#input-area {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 10px 16px calc(var(--safe-bottom) + 10px);
+}
+
+#input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+#input {
+  flex: 1;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.4;
+  padding: 10px 16px;
+  resize: none;
+  outline: none;
+  min-height: 42px;
+  max-height: 120px;
+  overflow-y: auto;
+  transition: border-color 0.2s;
+}
+
+#input:focus { border-color: #444; }
+#input::placeholder { color: var(--text-muted); }
+
+#send-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+#send-btn:disabled { opacity: 0.3; cursor: default; }
+#send-btn:active:not(:disabled) { opacity: 0.7; }
+
+/* --- Slash command autocomplete --- */
+#slash-menu {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #252525;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+#slash-menu.visible { display: block; }
+
+.slash-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.slash-item:last-child { border-bottom: none; }
+
+.slash-item:hover,
+.slash-item.active {
+  background: rgba(255,255,255,0.06);
+}
+
+.slash-item .slash-cmd {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 14px;
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+}
+
+.slash-item .slash-desc {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* --- Mobile responsive --- */
+@media (max-width: 768px) {
+  #sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  #sidebar.open {
+    transform: translateX(0);
+  }
+
+  #hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <span class="sidebar-title">Sessions</span>
+      <button id="new-session-btn" title="New session">+</button>
+    </div>
+    <div id="session-list"></div>
+  </div>
+  <div id="sidebar-overlay"></div>
+  <div id="app">
+    <div id="header">
+      <div id="header-left">
+        <button id="hamburger-btn" aria-label="Toggle sidebar">&#9776;</button>
+        <span class="project-name" id="project-name">Connecting...</span>
+      </div>
+      <div class="status">
+        <span id="status-text">Disconnected</span>
+        <span class="status-dot" id="status-dot"></span>
+      </div>
+    </div>
+
+    <div id="messages"></div>
+
+    <div id="input-area">
+      <div id="input-row" style="position:relative">
+        <div id="slash-menu"></div>
+        <textarea id="input" rows="1" placeholder="Message Claude..." enterkeyhint="send"></textarea>
+        <button id="send-btn" disabled aria-label="Send">&#9652;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var $ = function(id) { return document.getElementById(id); };
+  var messagesEl = $("messages");
+  var inputEl = $("input");
+  var sendBtn = $("send-btn");
+  var statusDot = $("status-dot");
+  var statusTextEl = $("status-text");
+  var projectNameEl = $("project-name");
+  var activityEl = null; // inline activity indicator in messages
+  var slashMenu = $("slash-menu");
+  var slashCommands = []; // populated from CLI init
+  var slashActiveIdx = -1;
+  var slashFiltered = [];
+
+  // Sidebar elements
+  var sidebar = $("sidebar");
+  var sidebarOverlay = $("sidebar-overlay");
+  var sessionListEl = $("session-list");
+  var newSessionBtn = $("new-session-btn");
+  var hamburgerBtn = $("hamburger-btn");
+
+  // Session state
+  var activeSessionId = null;
+  var sessionsList = [];
+
+  // Built-in client-side commands
+  var builtinCommands = [
+    { name: "clear", desc: "Clear conversation" },
+    { name: "cost", desc: "Show session cost" },
+  ];
+
+  var ws = null;
+  var connected = false;
+  var processing = false;
+  var isComposing = false;
+  var reconnectTimer = null;
+  var reconnectDelay = 1000;
+
+  var currentMsgEl = null;
+  var currentFullText = "";
+  var tools = {};
+  var currentThinking = null;
+  var highlightTimer = null;
+
+  // Activity verbs extracted from Claude Code CLI
+  var thinkingVerbs = [
+    "Accomplishing","Actioning","Actualizing","Architecting","Baking","Beaming",
+    "Beboppin'","Befuddling","Billowing","Blanching","Bloviating","Boogieing",
+    "Boondoggling","Booping","Bootstrapping","Brewing","Burrowing","Calculating",
+    "Canoodling","Caramelizing","Cascading","Catapulting","Cerebrating","Channeling",
+    "Channelling","Choreographing","Churning","Clauding","Coalescing","Cogitating",
+    "Combobulating","Composing","Computing","Concocting","Considering","Contemplating",
+    "Cooking","Crafting","Creating","Crunching","Crystallizing","Cultivating",
+    "Deciphering","Deliberating","Determining","Dilly-dallying","Discombobulating",
+    "Doing","Doodling","Drizzling","Ebbing","Effecting","Elucidating","Embellishing",
+    "Enchanting","Envisioning","Evaporating","Fermenting","Fiddle-faddling","Finagling",
+    "Flambing","Flibbertigibbeting","Flowing","Flummoxing","Fluttering","Forging",
+    "Forming","Frolicking","Frosting","Gallivanting","Galloping","Garnishing",
+    "Generating","Germinating","Gitifying","Grooving","Gusting","Harmonizing",
+    "Hashing","Hatching","Herding","Honking","Hullaballooing","Hyperspacing",
+    "Ideating","Imagining","Improvising","Incubating","Inferring","Infusing",
+    "Ionizing","Jitterbugging","Julienning","Kneading","Leavening","Levitating",
+    "Lollygagging","Manifesting","Marinating","Meandering","Metamorphosing","Misting",
+    "Moonwalking","Moseying","Mulling","Mustering","Musing","Nebulizing","Nesting",
+    "Newspapering","Noodling","Nucleating","Orbiting","Orchestrating","Osmosing",
+    "Perambulating","Percolating","Perusing","Philosophising","Photosynthesizing",
+    "Pollinating","Pondering","Pontificating","Pouncing","Precipitating",
+    "Prestidigitating","Processing","Proofing","Propagating","Puttering","Puzzling",
+    "Quantumizing","Razzle-dazzling","Razzmatazzing","Recombobulating","Reticulating",
+    "Roosting","Ruminating","Sauting","Scampering","Schlepping","Scurrying","Seasoning",
+    "Shenaniganing","Shimmying","Simmering","Skedaddling","Sketching","Slithering",
+    "Smooshing","Sock-hopping","Spelunking","Spinning","Sprouting","Stewing",
+    "Sublimating","Swirling","Swooping","Symbioting","Synthesizing","Tempering",
+    "Thinking","Thundering","Tinkering","Tomfoolering","Topsy-turvying","Transfiguring",
+    "Transmuting","Twisting","Undulating","Unfurling","Unravelling","Vibing","Waddling",
+    "Wandering","Warping","Whatchamacalliting","Whirlpooling","Whirring","Whisking",
+    "Wibbling","Working","Wrangling","Zesting","Zigzagging"
+  ];
+  function randomThinkingVerb() {
+    return thinkingVerbs[Math.floor(Math.random() * thinkingVerbs.length)];
+  }
+
+  // --- Markdown setup ---
+  marked.use({ gfm: true, breaks: false });
+
+  function renderMarkdown(text) {
+    return DOMPurify.sanitize(marked.parse(text));
+  }
+
+  function highlightCodeBlocks(el) {
+    el.querySelectorAll("pre code:not(.hljs)").forEach(function(block) {
+      hljs.highlightElement(block);
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  // --- Sidebar ---
+  function renderSessionList(sessions) {
+    sessionListEl.innerHTML = "";
+    for (var i = 0; i < sessions.length; i++) {
+      var s = sessions[i];
+      var el = document.createElement("div");
+      el.className = "session-item" + (s.active ? " active" : "");
+      el.dataset.sessionId = s.id;
+
+      var html = "";
+      if (s.isProcessing) {
+        html += '<span class="session-processing"></span>';
+      }
+      html += escapeHtml(s.title || "New Session");
+      el.innerHTML = html;
+
+      el.addEventListener("click", (function(id) {
+        return function() {
+          if (ws && connected) {
+            ws.send(JSON.stringify({ type: "switch_session", id: id }));
+            closeSidebar();
+          }
+        };
+      })(s.id));
+
+      sessionListEl.appendChild(el);
+    }
+  }
+
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sidebarOverlay.classList.add("visible");
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove("open");
+    sidebarOverlay.classList.remove("visible");
+  }
+
+  hamburgerBtn.addEventListener("click", function() {
+    if (sidebar.classList.contains("open")) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
+  });
+
+  sidebarOverlay.addEventListener("click", function() {
+    closeSidebar();
+  });
+
+  newSessionBtn.addEventListener("click", function() {
+    if (ws && connected) {
+      ws.send(JSON.stringify({ type: "new_session" }));
+      closeSidebar();
+    }
+  });
+
+  // --- Status ---
+  function setStatus(status) {
+    statusDot.className = "status-dot";
+    if (status === "connected") {
+      statusDot.classList.add("connected");
+      statusTextEl.textContent = "Connected";
+      connected = true;
+      sendBtn.disabled = false;
+    } else if (status === "processing") {
+      statusDot.classList.add("processing");
+      statusTextEl.textContent = "";
+      processing = true;
+      sendBtn.disabled = true;
+    } else {
+      statusTextEl.textContent = "Disconnected";
+      connected = false;
+      sendBtn.disabled = true;
+    }
+  }
+
+  function setActivity(text) {
+    if (text) {
+      if (!activityEl) {
+        activityEl = document.createElement("div");
+        activityEl.className = "activity-inline";
+        activityEl.innerHTML =
+          '<span class="activity-icon">&#10038;</span>' +
+          '<span class="activity-text"></span>';
+        messagesEl.appendChild(activityEl);
+      }
+      activityEl.querySelector(".activity-text").textContent = text;
+      scrollToBottom();
+    } else {
+      if (activityEl) {
+        activityEl.remove();
+        activityEl = null;
+      }
+    }
+  }
+
+  function scrollToBottom() {
+    requestAnimationFrame(function() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+  }
+
+  // --- Tool helpers ---
+  function toolSummary(name, input) {
+    if (!input || typeof input !== "object") return "";
+    switch (name) {
+      case "Read":       return shortPath(input.file_path);
+      case "Edit":       return shortPath(input.file_path);
+      case "Write":      return shortPath(input.file_path);
+      case "Bash":       return (input.command || "").substring(0, 80);
+      case "Glob":       return input.pattern || "";
+      case "Grep":       return (input.pattern || "") + (input.path ? " in " + shortPath(input.path) : "");
+      case "WebFetch":   return input.url || "";
+      case "WebSearch":  return input.query || "";
+      case "Task":       return input.description || "";
+      default:           return JSON.stringify(input).substring(0, 60);
+    }
+  }
+
+  function toolActivityText(name, input) {
+    if (name === "Bash" && input && input.description) return input.description;
+    if (name === "Read" && input && input.file_path) return "Reading " + shortPath(input.file_path);
+    if (name === "Edit" && input && input.file_path) return "Editing " + shortPath(input.file_path);
+    if (name === "Write" && input && input.file_path) return "Writing " + shortPath(input.file_path);
+    if (name === "Grep" && input && input.pattern) return "Searching for " + input.pattern;
+    if (name === "Glob" && input && input.pattern) return "Finding " + input.pattern;
+    if (name === "WebSearch" && input && input.query) return "Searching: " + input.query;
+    if (name === "WebFetch") return "Fetching URL...";
+    if (name === "Task" && input && input.description) return input.description;
+    return "Running " + name + "...";
+  }
+
+  function shortPath(p) {
+    if (!p) return "";
+    var parts = p.split("/");
+    return parts.length > 3 ? ".../" + parts.slice(-3).join("/") : p;
+  }
+
+  function truncateOutput(text, maxLines) {
+    maxLines = maxLines || 15;
+    var lines = text.split("\n");
+    if (lines.length <= maxLines) return text;
+    return lines.slice(0, maxLines).join("\n") + "\n... (" + (lines.length - maxLines) + " more lines)";
+  }
+
+  // --- DOM: Messages ---
+  function addUserMessage(text) {
+    var div = document.createElement("div");
+    div.className = "msg-user";
+    div.innerHTML = '<div class="bubble"></div>';
+    div.querySelector(".bubble").textContent = text;
+    messagesEl.appendChild(div);
+    scrollToBottom();
+  }
+
+  function ensureAssistantBlock() {
+    if (!currentMsgEl) {
+      currentMsgEl = document.createElement("div");
+      currentMsgEl.className = "msg-assistant";
+      currentMsgEl.innerHTML = '<div class="md-content"></div>';
+      messagesEl.appendChild(currentMsgEl);
+      currentFullText = "";
+    }
+    return currentMsgEl;
+  }
+
+  function appendDelta(text) {
+    ensureAssistantBlock();
+    currentFullText += text;
+    var contentEl = currentMsgEl.querySelector(".md-content");
+    contentEl.innerHTML = renderMarkdown(currentFullText);
+
+    if (highlightTimer) clearTimeout(highlightTimer);
+    highlightTimer = setTimeout(function() {
+      highlightCodeBlocks(contentEl);
+    }, 150);
+
+    scrollToBottom();
+  }
+
+  function finalizeAssistantBlock() {
+    if (currentMsgEl) {
+      var contentEl = currentMsgEl.querySelector(".md-content");
+      if (contentEl) highlightCodeBlocks(contentEl);
+    }
+    currentMsgEl = null;
+    currentFullText = "";
+  }
+
+  function addSystemMessage(text, isError) {
+    var div = document.createElement("div");
+    div.className = "sys-msg" + (isError ? " error" : "");
+    div.innerHTML = '<span class="sys-text"></span>';
+    div.querySelector(".sys-text").textContent = text;
+    messagesEl.appendChild(div);
+    scrollToBottom();
+  }
+
+  function resetClientState() {
+    messagesEl.innerHTML = "";
+    currentMsgEl = null;
+    currentFullText = "";
+    tools = {};
+    currentThinking = null;
+    activityEl = null;
+    processing = false;
+    setActivity(null);
+    setStatus("connected");
+  }
+
+  // --- Thinking ---
+  function startThinking() {
+    finalizeAssistantBlock();
+
+    var el = document.createElement("div");
+    el.className = "thinking-item";
+    el.innerHTML =
+      '<div class="thinking-header">' +
+        '<span class="thinking-chevron">&#9656;</span>' +
+        '<span class="thinking-label">Thinking</span>' +
+        '<span class="thinking-duration"></span>' +
+        '<span class="thinking-spinner"></span>' +
+      '</div>' +
+      '<div class="thinking-content"></div>';
+
+    el.querySelector(".thinking-header").addEventListener("click", function() {
+      el.classList.toggle("expanded");
+    });
+
+    messagesEl.appendChild(el);
+    scrollToBottom();
+    currentThinking = { el: el, fullText: "", startTime: Date.now() };
+    setActivity(randomThinkingVerb() + "...");
+  }
+
+  function appendThinking(text) {
+    if (!currentThinking) return;
+    currentThinking.fullText += text;
+    currentThinking.el.querySelector(".thinking-content").textContent = currentThinking.fullText;
+    scrollToBottom();
+  }
+
+  function stopThinking() {
+    if (!currentThinking) return;
+    var secs = ((Date.now() - currentThinking.startTime) / 1000).toFixed(1);
+    currentThinking.el.classList.add("done");
+    currentThinking.el.querySelector(".thinking-duration").textContent = " " + secs + "s";
+    currentThinking = null;
+  }
+
+  // --- Tool items ---
+  function createToolItem(id, name) {
+    finalizeAssistantBlock();
+    stopThinking();
+
+    var el = document.createElement("div");
+    el.className = "tool-item";
+    el.dataset.toolId = id;
+    el.innerHTML =
+      '<div class="tool-header">' +
+        '<span class="tool-bullet"></span>' +
+        '<span class="tool-name"></span>' +
+        '<span class="tool-desc"></span>' +
+        '<span class="tool-status-icon"><span class="spinner"></span></span>' +
+      '</div>' +
+      '<div class="tool-subtitle">' +
+        '<span class="tool-connector">&#9492;</span>' +
+        '<span class="tool-subtitle-text">Running...</span>' +
+      '</div>';
+
+    el.querySelector(".tool-name").textContent = name;
+
+    messagesEl.appendChild(el);
+    scrollToBottom();
+
+    tools[id] = { el: el, name: name, input: null, done: false };
+    setActivity("Running " + name + "...");
+  }
+
+  function updateToolExecuting(id, name, input) {
+    var tool = tools[id];
+    if (!tool) return;
+
+    tool.input = input;
+    tool.el.querySelector(".tool-desc").textContent = toolSummary(name, input);
+    setActivity(toolActivityText(name, input));
+
+    var subtitleText = tool.el.querySelector(".tool-subtitle-text");
+    if (subtitleText) subtitleText.textContent = toolActivityText(name, input);
+
+    scrollToBottom();
+  }
+
+  function updateToolResult(id, content, isError) {
+    var tool = tools[id];
+    if (!tool) return;
+
+    // Update subtitle to show description
+    var subtitleText = tool.el.querySelector(".tool-subtitle-text");
+    if (subtitleText && tool.input) {
+      subtitleText.textContent = toolActivityText(tool.name, tool.input);
+    }
+
+    // Add result code block — VISIBLE by default (like Claude Desktop)
+    var resultBlock = document.createElement("div");
+    resultBlock.className = "tool-result-block";
+    var pre = document.createElement("pre");
+    if (isError) pre.className = "is-error";
+    var displayContent = content || "(no output)";
+    if (displayContent.length > 10000) displayContent = displayContent.substring(0, 10000) + "\n... (truncated)";
+    pre.textContent = displayContent;
+    resultBlock.appendChild(pre);
+    tool.el.appendChild(resultBlock);
+
+    // Click header to toggle result block visibility
+    tool.el.querySelector(".tool-header").addEventListener("click", function(e) {
+      resultBlock.classList.toggle("collapsed");
+    });
+
+    markToolDone(id, isError);
+    scrollToBottom();
+  }
+
+  function markToolDone(id, isError) {
+    var tool = tools[id];
+    if (!tool || tool.done) return;
+
+    tool.done = true;
+    tool.el.classList.add("done");
+    if (isError) tool.el.classList.add("error");
+
+    var icon = tool.el.querySelector(".tool-status-icon");
+    icon.innerHTML = isError
+      ? '<span class="err-icon">!</span>'
+      : '<span class="check">&#10003;</span>';
+  }
+
+  function markAllToolsDone() {
+    for (var id in tools) {
+      if (tools.hasOwnProperty(id) && !tools[id].done) {
+        markToolDone(id, false);
+      }
+    }
+  }
+
+  function addTurnMeta(cost, duration) {
+    var div = document.createElement("div");
+    div.className = "turn-meta";
+    var parts = [];
+    if (cost != null) parts.push("$" + cost.toFixed(4));
+    if (duration != null) parts.push((duration / 1000).toFixed(1) + "s");
+    if (parts.length) {
+      div.textContent = parts.join(" \u00b7 ");
+      messagesEl.appendChild(div);
+      scrollToBottom();
+    }
+  }
+
+  // --- WebSocket ---
+  function connect() {
+    if (ws) { ws.onclose = null; ws.close(); }
+
+    var protocol = location.protocol === "https:" ? "wss:" : "ws:";
+    ws = new WebSocket(protocol + "//" + location.host);
+
+    ws.onopen = function() {
+      setStatus("connected");
+      reconnectDelay = 1000;
+      if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    };
+
+    ws.onclose = function() {
+      setStatus("disconnected");
+      processing = false;
+      setActivity(null);
+      scheduleReconnect();
+    };
+
+    ws.onerror = function() {};
+
+    ws.onmessage = function(event) {
+      var msg;
+      try { msg = JSON.parse(event.data); } catch(e) { return; }
+
+      switch (msg.type) {
+        case "info":
+          projectNameEl.textContent = msg.project || msg.cwd;
+          break;
+
+        case "slash_commands":
+          slashCommands = (msg.commands || []).map(function(name) {
+            return { name: name, desc: "Skill" };
+          });
+          break;
+
+        case "session_list":
+          sessionsList = msg.sessions || [];
+          renderSessionList(sessionsList);
+          break;
+
+        case "session_switched":
+          activeSessionId = msg.id;
+          resetClientState();
+          break;
+
+        case "user_message":
+          addUserMessage(msg.text);
+          break;
+
+        case "status":
+          if (msg.status === "processing") {
+            setStatus("processing");
+            setActivity(randomThinkingVerb() + "...");
+          }
+          break;
+
+        case "thinking_start":
+          startThinking();
+          break;
+
+        case "thinking_delta":
+          if (typeof msg.text === "string") appendThinking(msg.text);
+          break;
+
+        case "thinking_stop":
+          stopThinking();
+          setActivity(randomThinkingVerb() + "...");
+          break;
+
+        case "delta":
+          if (typeof msg.text !== "string") break;
+          stopThinking();
+          setActivity(null);
+          appendDelta(msg.text);
+          break;
+
+        case "tool_start":
+          stopThinking();
+          markAllToolsDone();
+          createToolItem(msg.id, msg.name);
+          break;
+
+        case "tool_executing":
+          updateToolExecuting(msg.id, msg.name, msg.input);
+          break;
+
+        case "tool_result":
+          if (msg.content != null) {
+            updateToolResult(msg.id, msg.content, msg.is_error || false);
+          }
+          break;
+
+        case "result":
+          setActivity(null);
+          stopThinking();
+          markAllToolsDone();
+          finalizeAssistantBlock();
+          addTurnMeta(msg.cost, msg.duration);
+          break;
+
+        case "done":
+          setActivity(null);
+          stopThinking();
+          markAllToolsDone();
+          finalizeAssistantBlock();
+          processing = false;
+          setStatus("connected");
+          tools = {};
+          break;
+
+        case "stderr":
+          addSystemMessage(msg.text, false);
+          break;
+
+        case "error":
+          setActivity(null);
+          addSystemMessage(msg.text, true);
+          break;
+      }
+    };
+  }
+
+  function scheduleReconnect() {
+    if (reconnectTimer) return;
+    reconnectTimer = setTimeout(function() {
+      reconnectTimer = null;
+      connect();
+    }, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 1.5, 10000);
+  }
+
+  function sendMessage() {
+    var text = inputEl.value.trim();
+    if (!text) return;
+    hideSlashMenu();
+
+    // Handle client-side commands
+    if (text === "/clear") {
+      messagesEl.innerHTML = "";
+      inputEl.value = "";
+      autoResize();
+      return;
+    }
+
+    if (!connected || processing) return;
+
+    addUserMessage(text);
+    ws.send(JSON.stringify({ type: "message", text: text }));
+
+    inputEl.value = "";
+    autoResize();
+    inputEl.focus();
+  }
+
+  function autoResize() {
+    inputEl.style.height = "auto";
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
+  }
+
+  // --- Slash menu ---
+  function getAllCommands() {
+    return builtinCommands.concat(slashCommands);
+  }
+
+  function showSlashMenu(filter) {
+    var query = filter.toLowerCase();
+    slashFiltered = getAllCommands().filter(function(c) {
+      return c.name.toLowerCase().indexOf(query) !== -1;
+    });
+    if (slashFiltered.length === 0) { hideSlashMenu(); return; }
+
+    slashActiveIdx = 0;
+    slashMenu.innerHTML = slashFiltered.map(function(c, i) {
+      return '<div class="slash-item' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '">' +
+        '<span class="slash-cmd">/' + c.name + '</span>' +
+        '<span class="slash-desc">' + c.desc + '</span>' +
+      '</div>';
+    }).join("");
+    slashMenu.classList.add("visible");
+
+    // Click handlers
+    slashMenu.querySelectorAll(".slash-item").forEach(function(el) {
+      el.addEventListener("click", function() {
+        selectSlashItem(parseInt(el.dataset.idx));
+      });
+    });
+  }
+
+  function hideSlashMenu() {
+    slashMenu.classList.remove("visible");
+    slashMenu.innerHTML = "";
+    slashActiveIdx = -1;
+    slashFiltered = [];
+  }
+
+  function selectSlashItem(idx) {
+    if (idx < 0 || idx >= slashFiltered.length) return;
+    var cmd = slashFiltered[idx];
+    inputEl.value = "/" + cmd.name + " ";
+    hideSlashMenu();
+    autoResize();
+    inputEl.focus();
+  }
+
+  function updateSlashHighlight() {
+    slashMenu.querySelectorAll(".slash-item").forEach(function(el, i) {
+      el.classList.toggle("active", i === slashActiveIdx);
+    });
+    var activeEl = slashMenu.querySelector(".slash-item.active");
+    if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
+  }
+
+  // Input handlers
+  inputEl.addEventListener("input", function() {
+    autoResize();
+    var val = inputEl.value;
+    if (val.startsWith("/") && !val.includes(" ") && val.length > 1) {
+      showSlashMenu(val.substring(1));
+    } else if (val === "/") {
+      showSlashMenu("");
+    } else {
+      hideSlashMenu();
+    }
+  });
+
+  inputEl.addEventListener("compositionstart", function() { isComposing = true; });
+  inputEl.addEventListener("compositionend", function() { isComposing = false; });
+
+  inputEl.addEventListener("keydown", function(e) {
+    // Slash menu navigation
+    if (slashFiltered.length > 0 && slashMenu.classList.contains("visible")) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        slashActiveIdx = (slashActiveIdx + 1) % slashFiltered.length;
+        updateSlashHighlight();
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        slashActiveIdx = (slashActiveIdx - 1 + slashFiltered.length) % slashFiltered.length;
+        updateSlashHighlight();
+        return;
+      }
+      if (e.key === "Tab" || (e.key === "Enter" && !e.shiftKey)) {
+        e.preventDefault();
+        selectSlashItem(slashActiveIdx);
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        hideSlashMenu();
+        return;
+      }
+    }
+
+    if (e.key === "Enter" && !e.shiftKey && !isComposing) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener("click", function() { sendMessage(); });
+
+  // Mobile viewport
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", function() {
+      $("app").style.height = window.visualViewport.height + "px";
+      scrollToBottom();
+    });
+    window.visualViewport.addEventListener("scroll", function() {
+      $("app").style.height = window.visualViewport.height + "px";
+    });
+  }
+
+  connect();
+  inputEl.focus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "claude-relay",
+  "version": "1.0.0",
+  "description": "Web-based Claude Code interface for mobile access over local network",
+  "bin": {
+    "claude-relay": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "lib/"
+  ],
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "license": "MIT"
+}
