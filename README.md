@@ -2,6 +2,8 @@
 
 Run `npx claude-relay` in any directory. Access Claude Code on that directory from any device.
 
+![claude-relay demo](screenshot.gif)
+
 ```
 $ cd ~/my-project
 $ npx claude-relay
@@ -74,7 +76,7 @@ claude-relay automatically detects [Tailscale](https://tailscale.com) and uses y
 ## Limitations
 
 - Permission prompts (tool approval) are not yet relayed to the browser
-- Image/file attachments from the browser are not yet supported
+- File attachments from the browser are not yet supported
 - Session persistence is unstable
 
 These are planned for future releases. Contributions welcome.
