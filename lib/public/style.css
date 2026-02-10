@@ -1125,6 +1125,16 @@ html, body {
 #send-btn:disabled { opacity: 0.3; cursor: default; }
 #send-btn:active:not(:disabled) { opacity: 0.7; }
 
+#send-btn.stop {
+  background: var(--error);
+  color: #fff;
+}
+
+#send-btn.stop .lucide {
+  width: 14px;
+  height: 14px;
+}
+
 /* --- Slash command autocomplete --- */
 #slash-menu {
   display: none;
