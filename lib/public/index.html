@@ -18,21 +18,27 @@
 <body>
 <div id="layout">
   <div id="sidebar">
-    <div id="sidebar-header">
-      <div class="sidebar-header-top">
-        <span class="sidebar-title">Sessions</span>
+    <nav id="sidebar-nav">
+      <div class="sidebar-nav-row">
+        <button id="new-session-btn"><i data-lucide="plus"></i> <span>New session</span></button>
         <button id="sidebar-toggle-btn" title="Close sidebar"><i data-lucide="panel-left-close"></i></button>
       </div>
-      <div class="sidebar-header-buttons">
-        <button id="new-session-btn" title="New session"><i data-lucide="plus"></i> New Session</button>
-        <button id="resume-session-btn" title="Resume CLI session"><i data-lucide="terminal"></i> Resume</button>
-      </div>
-    </div>
+      <button id="resume-session-btn"><i data-lucide="terminal"></i> <span>Resume session</span></button>
+    </nav>
     <div id="session-list"></div>
     <div id="sidebar-footer">
-      <a href="https://github.com/chadbyte/claude-relay" target="_blank" rel="noopener">
-        <i data-lucide="github"></i> GitHub
-      </a>
+      <button id="sidebar-footer-btn">
+        <span class="footer-btn-label"><svg class="footer-mascot" viewBox="0 0 12 12" width="16" height="16"><rect x="0" y="0" width="12" height="12" rx="2" fill="#3E3C37"/><rect x="5" y="0" width="1" height="1" fill="#6D6860"/><rect x="6" y="0" width="1" height="1" fill="#6D6860"/><rect x="5" y="1" width="1" height="1" fill="#6D6860"/><rect x="6" y="1" width="1" height="1" fill="#6D6860"/><rect x="2" y="2" width="8" height="2" fill="#908B81"/><rect x="2" y="4" width="1" height="2" fill="#908B81"/><rect x="3" y="4" width="1" height="2" fill="#262522"/><rect x="4" y="4" width="4" height="2" fill="#908B81"/><rect x="8" y="4" width="1" height="2" fill="#262522"/><rect x="9" y="4" width="1" height="2" fill="#908B81"/><rect x="0" y="6" width="12" height="2" fill="#908B81"/><rect x="2" y="8" width="8" height="2" fill="#908B81"/><rect x="2" y="10" width="1" height="2" fill="#908B81"/><rect x="4" y="10" width="1" height="2" fill="#908B81"/><rect x="7" y="10" width="1" height="2" fill="#908B81"/><rect x="9" y="10" width="1" height="2" fill="#908B81"/></svg> Claude Relay <span id="footer-version" class="footer-version"></span></span>
+        <i data-lucide="ellipsis" style="width:14px;height:14px"></i>
+      </button>
+      <div id="sidebar-footer-menu" class="hidden">
+        <a class="sidebar-menu-item" href="https://github.com/chadbyte/claude-relay" target="_blank" rel="noopener">
+          <i data-lucide="github"></i> <span>GitHub</span>
+        </a>
+        <button class="sidebar-menu-item" id="footer-update-check">
+          <i data-lucide="refresh-cw"></i> <span>Check for updates</span>
+        </button>
+      </div>
     </div>
   </div>
   <div id="sidebar-overlay"></div>
@@ -42,9 +48,9 @@
       <button id="update-how" title="How to update">How to update</button>
       <button id="update-banner-close" aria-label="Dismiss"><i data-lucide="x"></i></button>
     </div>
-    <div id="https-banner" class="hidden">
-      <span class="https-banner-text"><i data-lucide="shield"></i> Your connection is not encrypted. <a id="https-banner-link" href="/setup">Set up HTTPS</a></span>
-      <button id="https-banner-close" aria-label="Dismiss"><i data-lucide="x"></i></button>
+    <div id="onboarding-banner" class="hidden">
+      <span class="onboarding-banner-text" id="onboarding-banner-text"></span>
+      <button id="onboarding-banner-close" aria-label="Dismiss"><i data-lucide="x"></i></button>
     </div>
     <div id="header">
       <div id="header-left">
@@ -53,6 +59,21 @@
         <span class="project-name" id="project-name">Connecting...</span>
       </div>
       <div class="status">
+        <div id="debug-menu-wrap" class="hidden">
+          <button id="debug-btn" title="Debug"><i data-lucide="bug"></i></button>
+          <div id="debug-menu" class="hidden">
+            <label class="notif-option">
+              <span>Update banner</span>
+              <input type="checkbox" id="debug-toggle-update">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+            <label class="notif-option">
+              <span>Onboarding banner</span>
+              <input type="checkbox" id="debug-toggle-onboarding">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+        </div>
         <div id="notif-menu-wrap">
           <button id="notif-btn" title="Notifications"><i data-lucide="sliders-horizontal"></i></button>
           <div id="notif-menu" class="hidden">
