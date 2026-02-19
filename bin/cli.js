@@ -312,6 +312,33 @@ function getLocalIP() {
 }
 
 // --- Certs ---
+function isRoutableIP(addr) {
+  if (addr.startsWith("10.")) return true;
+  if (addr.startsWith("192.168.")) return true;
+  if (addr.startsWith("100.")) {
+    var second = parseInt(addr.split(".")[1], 10);
+    return second >= 64 && second <= 127; // CGNAT (Tailscale)
+  }
+  if (addr.startsWith("172.")) {
+    var second = parseInt(addr.split(".")[1], 10);
+    return second >= 16 && second <= 31;
+  }
+  return false;
+}
+
+function getAllIPs() {
+  var ips = [];
+  var ifaces = os.networkInterfaces();
+  for (var addrs of Object.values(ifaces)) {
+    for (var j = 0; j < addrs.length; j++) {
+      if (addrs[j].family === "IPv4" && !addrs[j].internal && isRoutableIP(addrs[j].address)) {
+        ips.push(addrs[j].address);
+      }
+    }
+  }
+  return ips;
+}
+
 function ensureCerts(ip) {
   var homeDir = os.homedir();
   var certDir = path.join(homeDir, ".claude-relay", "certs");
@@ -336,21 +363,29 @@ function ensureCerts(ip) {
     if (!fs.existsSync(caRoot)) caRoot = null;
   } catch (e) {}
 
+  // Collect all IPv4 addresses (Tailscale + LAN)
+  var allIPs = getAllIPs();
+
   if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
     var needRegen = false;
-    if (ip && ip !== "localhost") {
-      try {
-        var certText = execFileSync("openssl", ["x509", "-in", certPath, "-text", "-noout"], { encoding: "utf8" });
-        if (certText.indexOf(ip) === -1) needRegen = true;
-      } catch (e) {}
-    }
+    try {
+      var certText = execFileSync("openssl", ["x509", "-in", certPath, "-text", "-noout"], { encoding: "utf8" });
+      for (var i = 0; i < allIPs.length; i++) {
+        if (certText.indexOf(allIPs[i]) === -1) {
+          needRegen = true;
+          break;
+        }
+      }
+    } catch (e) { needRegen = true; }
     if (!needRegen) return { key: keyPath, cert: certPath, caRoot: caRoot };
   }
 
   fs.mkdirSync(certDir, { recursive: true });
 
   var domains = ["localhost", "127.0.0.1", "::1"];
-  if (ip && ip !== "localhost") domains.push(ip);
+  for (var i = 0; i < allIPs.length; i++) {
+    if (domains.indexOf(allIPs[i]) === -1) domains.push(allIPs[i]);
+  }
 
   try {
     execSync(
@@ -1435,22 +1470,6 @@ function showSetupGuide(config, ip, goBack) {
   var wantRemote = false;
   var wantPush = false;
 
-  // If everything is already set up, skip straight to QR
-  var tsReady = getTailscaleIP() !== null;
-  var mcReady = hasMkcert();
-  if (tsReady && mcReady && config.tls) {
-    console.clear();
-    printLogo();
-    log("");
-    log(sym.pointer + "  " + a.bold + "Setup Notifications" + a.reset);
-    log(sym.bar);
-    log(sym.done + "  " + a.green + "Tailscale" + a.reset + a.dim + " · " + getTailscaleIP() + a.reset);
-    log(sym.done + "  " + a.green + "HTTPS" + a.reset + a.dim + " · mkcert installed" + a.reset);
-    log(sym.bar);
-    showSetupQR();
-    return;
-  }
-
   console.clear();
   printLogo();
   log("");
@@ -1564,10 +1583,19 @@ function showSetupGuide(config, ip, goBack) {
 
   function showSetupQR() {
     var tsIP = getTailscaleIP();
+    var lanIP = null;
+    if (!wantRemote) {
+      var allIPs = getAllIPs();
+      for (var j = 0; j < allIPs.length; j++) {
+        if (!allIPs[j].startsWith("100.")) { lanIP = allIPs[j]; break; }
+      }
+    }
+    var setupIP = wantRemote ? (tsIP || ip) : (lanIP || ip);
+    var setupQuery = wantRemote ? "" : "?mode=lan";
     // Always use HTTP onboarding URL for QR/setup when TLS is active
     var setupUrl = config.tls
-      ? "http://" + (tsIP || ip) + ":" + (config.port + 1) + "/setup"
-      : "http://" + (tsIP || ip) + ":" + config.port + "/setup";
+      ? "http://" + setupIP + ":" + (config.port + 1) + "/setup" + setupQuery
+      : "http://" + setupIP + ":" + config.port + "/setup" + setupQuery;
     log(sym.pointer + "  " + a.bold + "Continue on your device" + a.reset);
     log(sym.bar + "  " + a.dim + "Scan the QR code or open:" + a.reset);
     log(sym.bar + "  " + a.bold + setupUrl + a.reset);
@@ -1576,7 +1604,7 @@ function showSetupGuide(config, ip, goBack) {
       var lines = code.split("\n").map(function (l) { return "  " + sym.bar + "  " + l; }).join("\n");
       console.log(lines);
       log(sym.bar);
-      if (tsIP) {
+      if (wantRemote) {
         log(sym.bar + "  " + a.dim + "Can't connect? Make sure Tailscale is installed on your phone too." + a.reset);
       } else {
         log(sym.bar + "  " + a.dim + "Can't connect? Your phone must be on the same Wi-Fi network." + a.reset);
