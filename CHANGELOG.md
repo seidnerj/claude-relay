@@ -2,6 +2,12 @@
 
 ## WIP
 
+## v2.2.2
+
+- Remove OAuth usage API to comply with Anthropic Consumer ToS (OAuth tokens are now restricted to Claude Code and claude.ai only)
+- Replace rate limit bar UI with link to claude.ai/settings/usage
+- Remove usage FAB button and header button; usage panel now accessible only via `/usage` slash command
+
 ## v2.2.1
 
 - Add `--add`, `--remove`, `--list` CLI flags for non-interactive project management (#75)
