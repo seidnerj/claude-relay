@@ -4,6 +4,14 @@
 
 - Auto-restart daemon with HTTPS when mkcert is installed but TLS was not active (#90)
 - Reload config from disk after setup guide completes (pick up TLS state changes)
+- Auto-restart daemon on crash with project recovery and client notification (#101)
+- File browser refresh button and auto-refresh on directory changes (#89)
+- File history diff viewer with split/unified views, compare bar, and go-to-chat navigation
+- Process status panel with `/status` command (#85)
+- Auto-cleanup sessions on disconnect and graceful shutdown (#86)
+- Rewind mode selection for chat-only, files-only, or both (#43)
+- Fix lastRewindUuid not persisting across daemon restarts
+- Paste copied file from Finder into chat to insert its path (#81)
 
 ## v2.2.4
 
