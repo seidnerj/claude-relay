@@ -2,16 +2,32 @@
 
 ## WIP
 
+## v2.3.0
+
+- Add `--dangerously-skip-permissions` CLI flag to bypass all permission prompts via SDK native `permissionMode` (#100)
+  - Requires `--pin` for safety; shows red warning banner in web UI when active
+- Fix iOS push notifications not delivered in background by adding `urgency: high` header (#94)
+- Fix notification click opening blank session instead of correct project (#94)
+- Fix silent validation pushes showing empty notifications in service worker (#94)
+- Add `/context` command with context window usage panel (#84)
+  - Minimizable context panel with inline mini bar (#96)
+  - Green/yellow/red color coding for context bar
+  - Persist context panel view state across sessions and restarts
+  - `/clear` now starts a new session instead of just hiding messages
+- Add image lightbox modal with click-to-preview (#82)
+- Add auto-focus input on session switch (#98)
+- Auto-restart daemon on crash with project recovery and client notification (#101)
 - Auto-restart daemon with HTTPS when mkcert is installed but TLS was not active (#90)
 - Reload config from disk after setup guide completes (pick up TLS state changes)
-- Auto-restart daemon on crash with project recovery and client notification (#101)
 - File browser refresh button and auto-refresh on directory changes (#89)
 - File history diff viewer with split/unified views, compare bar, and go-to-chat navigation
 - Process status panel with `/status` command (#85)
 - Auto-cleanup sessions on disconnect and graceful shutdown (#86)
 - Rewind mode selection for chat-only, files-only, or both (#43)
-- Fix lastRewindUuid not persisting across daemon restarts
 - Paste copied file from Finder into chat to insert its path (#81)
+- Fix WebSocket 403 when behind reverse proxy with different port (#106)
+- Fix lastRewindUuid not persisting across daemon restarts
+- Fix context panel token calculation and `/clear` cleanup
 
 ## v2.2.4
 
