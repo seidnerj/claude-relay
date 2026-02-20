@@ -6,6 +6,9 @@
 
 - Add `--dangerously-skip-permissions` CLI flag to bypass all permission prompts via SDK native `permissionMode` (#100)
   - Requires `--pin` for safety; shows red warning banner in web UI when active
+- Fix iOS push notifications not delivered in background by adding `urgency: high` header (#94)
+- Fix notification click opening blank session instead of correct project (#94)
+- Fix silent validation pushes showing empty notifications in service worker (#94)
 - Add `/context` command with context window usage panel (#84)
   - Minimizable context panel with inline mini bar (#96)
   - Green/yellow/red color coding for context bar
