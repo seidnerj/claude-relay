@@ -182,6 +182,9 @@ If push registration fails: check whether your browser trusts HTTPS and whether 
 ```bash
 npx claude-relay              # Default (port 2633)
 npx claude-relay -p 8080      # Specify port
+npx claude-relay -y           # Skip interactive prompts (accept defaults)
+npx claude-relay -y --pin 123456
+                              # Non-interactive with PIN (for scripts/CI)
 npx claude-relay --no-https   # Disable HTTPS
 npx claude-relay --no-update  # Skip update check
 npx claude-relay --debug      # Enable debug panel
@@ -189,6 +192,9 @@ npx claude-relay --add .      # Add current directory to running daemon
 npx claude-relay --add /path  # Add a project by path
 npx claude-relay --remove .   # Remove a project
 npx claude-relay --list       # List registered projects
+npx claude-relay --shutdown   # Stop the running daemon
+npx claude-relay --dangerously-skip-permissions
+                              # Bypass all permission prompts (PIN required during setup)
 ```
 
 ## Requirements
@@ -235,6 +241,12 @@ For a detailed sequence diagram, daemon structure, and design decisions, refer t
 </a>
 
 ---
+
+## Contributors
+
+<a href="https://github.com/chadbyte/claude-relay/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=chadbyte/claude-relay" />
+</a>
 
 ## Contributing
 
