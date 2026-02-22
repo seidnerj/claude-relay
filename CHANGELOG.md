@@ -9,6 +9,7 @@
 - Fix excessive "Server Connection Lost" notifications by adding 5-second debounce before showing push notification (#113)
 - Defer server-side query abort by 30 seconds when all clients disconnect, allowing brief reconnections from mobile app switching (#113)
 - Suppress "Server connection restored" notification when disconnection was too brief to notify
+- Fix Node 18 "Object not disposable" error after Claude Code auto-update by polyfilling `Symbol.dispose` (#116)
 
 ## v2.3.0
 
