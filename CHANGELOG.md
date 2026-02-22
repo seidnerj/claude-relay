@@ -10,6 +10,7 @@
 - Debounce "Server Connection Lost" notification by 5 seconds to suppress alerts on brief disconnections (#113)
 - Suppress "Server connection restored" notification when disconnection was too brief to notify
 - Redirect to dashboard with toast when accessing a removed project instead of showing bare "Not found" page
+- Change notification menu icon from sliders to bell
 - Fix Node 18 "Object not disposable" error after Claude Code auto-update by polyfilling `Symbol.dispose` (#116)
 
 ## v2.3.0
