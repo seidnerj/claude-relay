@@ -1281,7 +1281,7 @@ async function forkDaemon(pin, keepAwake, extraProjects, addCwd) {
 // ==============================
 // Dev mode — foreground daemon with file watching
 // ==============================
-async function devMode() {
+async function devMode(pin, keepAwake, existingPinHash) {
   var ip = getLocalIP();
   var hasTls = false;
 
@@ -1316,10 +1316,10 @@ async function devMode() {
   var config = {
     pid: null,
     port: port,
-    pinHash: cliPin ? generateAuthToken(cliPin) : null,
+    pinHash: existingPinHash || (pin ? generateAuthToken(pin) : null),
     tls: hasTls,
     debug: true,
-    keepAwake: false,
+    keepAwake: keepAwake || false,
     dangerouslySkipPermissions: dangerouslySkipPermissions,
     projects: allProjects,
   };
@@ -2166,7 +2166,15 @@ var currentVersion = require("../package.json").version;
       clearStaleConfig();
       await new Promise(function (resolve) { setTimeout(resolve, 500); });
     }
-    await devMode();
+    // First run — go through setup (disclaimer, port, PIN, etc.)
+    if (!devConfig) {
+      setup(function (pin, keepAwake) {
+        devMode(pin, keepAwake, null);
+      });
+    } else {
+      // Reuse existing PIN hash from previous config
+      await devMode(cliPin || null, devConfig.keepAwake || false, devConfig.pinHash || null);
+    }
     return;
   }
 
