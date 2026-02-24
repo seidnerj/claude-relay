@@ -225,6 +225,23 @@
   opacity: 0.4;
 }
 
+.pd-remove {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  line-height: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.pd-remove .lucide { width: 14px; height: 14px; }
+.project-dropdown-item:hover .pd-remove { display: block; }
+.pd-remove:hover { color: var(--error); background: rgba(255, 255, 255, 0.06); }
+
 .project-dropdown-footer {
   border-top: 1px solid var(--border-subtle);
   padding: 4px 0;
