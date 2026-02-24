@@ -1365,14 +1365,21 @@ async function devMode() {
     }
   }
 
-  var protocol = hasTls ? "https" : "http";
-  var url = protocol + "://" + ip + ":" + port;
   console.log("\x1b[36m[dev]\x1b[0m Starting relay on port " + port + "...");
-  console.log("\x1b[36m[dev]\x1b[0m " + url);
   console.log("\x1b[36m[dev]\x1b[0m Watching lib/ for changes (excluding lib/public/)");
   console.log("");
 
   spawnDaemon();
+
+  // Wait for daemon to be ready, then show CLI menu
+  await new Promise(function (resolve) { setTimeout(resolve, 1000); });
+  config.pid = child ? child.pid : null;
+  saveConfig(config);
+
+  var daemonReady = await isDaemonAliveAsync(config);
+  if (daemonReady) {
+    showServerStarted(config, ip);
+  }
 
   // Watch lib/ for server-side file changes
   var watcher = fs.watch(libDir, { recursive: true }, function (eventType, filename) {
@@ -1392,7 +1399,10 @@ async function devMode() {
   });
 
   // Clean exit on Ctrl+C
+  var shuttingDown = false;
   process.on("SIGINT", function () {
+    if (shuttingDown) return;
+    shuttingDown = true;
     console.log("\n\x1b[36m[dev]\x1b[0m Shutting down...");
     watcher.close();
     if (debounceTimer) clearTimeout(debounceTimer);
