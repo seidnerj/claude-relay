@@ -414,6 +414,24 @@
   </div>
 </div>
 
+<div id="add-project-modal" class="hidden">
+  <div class="confirm-backdrop"></div>
+  <div class="confirm-dialog add-project-dialog">
+    <div class="add-project-title">Add project</div>
+    <div class="add-project-body">
+      <div class="add-project-input-wrap">
+        <input type="text" id="add-project-input" placeholder="/" autocomplete="off" spellcheck="false">
+        <div id="add-project-suggestions" class="hidden"></div>
+      </div>
+      <div id="add-project-error" class="hidden"></div>
+    </div>
+    <div class="confirm-actions">
+      <button class="confirm-btn confirm-cancel" id="add-project-cancel">Cancel</button>
+      <button class="confirm-btn confirm-ok" id="add-project-ok">Add</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/marked@14/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>

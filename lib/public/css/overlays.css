@@ -520,6 +520,98 @@
 .notif-help-url .popover-copy:hover { color: var(--text); border-color: var(--text-dimmer); }
 .notif-help-url .popover-copy.copied { color: var(--success); border-color: var(--success); }
 
+/* --- Add project modal --- */
+#add-project-modal { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; }
+#add-project-modal.hidden { display: none; }
+
+.add-project-dialog { max-width: 420px; }
+
+.add-project-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.add-project-body { margin-bottom: 16px; }
+
+.add-project-input-wrap { position: relative; }
+
+#add-project-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#add-project-input:focus { border-color: var(--text-dimmer); }
+#add-project-input::placeholder { color: var(--text-muted); font-family: "Inter", system-ui, sans-serif; }
+
+#add-project-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+#add-project-suggestions.hidden { display: none; }
+
+.add-project-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.add-project-suggestion-item:first-child { border-radius: 8px 8px 0 0; }
+.add-project-suggestion-item:last-child { border-radius: 0 0 8px 8px; }
+.add-project-suggestion-item:only-child { border-radius: 8px; }
+.add-project-suggestion-item:hover,
+.add-project-suggestion-item.active { background: var(--sidebar-hover); }
+
+.add-project-suggestion-item .lucide { width: 14px; height: 14px; color: var(--text-muted); flex-shrink: 0; }
+
+.add-project-suggestion-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-project-suggestion-path {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 50%;
+}
+
+#add-project-error {
+  font-size: 12px;
+  color: var(--error);
+  margin-top: 8px;
+}
+
+#add-project-error.hidden { display: none; }
+
 /* --- Connect overlay --- */
 #connect-overlay {
   position: absolute;
