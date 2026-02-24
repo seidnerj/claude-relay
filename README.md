@@ -6,7 +6,7 @@
 
 <h3 align="center">Web UI for Claude Code. Any device. Push notifications.</h3>
 
-[![npm version](https://img.shields.io/npm/v/claude-relay)](https://www.npmjs.com/package/claude-relay) [![npm downloads](https://img.shields.io/npm/dw/claude-relay)](https://www.npmjs.com/package/claude-relay) [![GitHub stars](https://img.shields.io/github/stars/chadbyte/claude-relay)](https://github.com/chadbyte/claude-relay)
+[![npm version](https://img.shields.io/npm/v/claude-relay)](https://www.npmjs.com/package/claude-relay) [![npm downloads](https://img.shields.io/npm/dw/claude-relay)](https://www.npmjs.com/package/claude-relay) [![GitHub stars](https://img.shields.io/github/stars/chadbyte/claude-relay)](https://github.com/chadbyte/claude-relay) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/chadbyte/claude-relay/blob/main/LICENSE)
 
 Claude Code. Anywhere.  
 Same session. Same files. Same machine.  
@@ -86,7 +86,7 @@ Scan the QR code with your phone to connect instantly, or open the URL displayed
 ## Key Features
 
 * **Push Approvals** - Approve or reject from your phone while away, so Claude Code does not get stuck waiting.
-* **Multi Project Daemon** - Manage all projects via a single port.
+* **Multi Project Daemon** - Manage all projects via a single port. Add and remove projects from the browser.
 * **Usage and Model Switching** - View token usage, rate limit bars, and switch models from the browser.
 * **Session Search** - Full-text search across all session messages with hit timeline.
 * **Auto Session Logs (JSONL)** - Conversations and execution history are always saved locally. No data loss on crashes or restarts. Location: `./.claude-relay/sessions/`
@@ -105,10 +105,10 @@ Scan the QR code with your phone to connect instantly, or open the URL displayed
 
 **Projects and Sessions**
 
-* **Multi Project** - Single port management for all projects.
+* **Multi Project** - Single port management for all projects. Add and remove projects from the browser with path autocomplete.
 * **Project Names** - Custom names make it easy to distinguish tabs.
 * **Session Persistence** - Sessions survive server restarts, browser crashes, and network drops.
-* **Session Handoff** - Start in the terminal, continue on your phone, pass back to desktop.
+* **Session Handoff** - Start in the terminal, continue on your phone, pass back to desktop. Browse and resume CLI sessions directly from the web UI.
 * **Session Search** - Full-text search across all session content with highlighted results and a rewind-style hit timeline.
 * **Rewind (Native Claude Code)** - Accessible directly from the browser UI.
 * **Draft Persistence** - Unsent messages are saved per session and restored when you switch back.
@@ -183,7 +183,7 @@ If push registration fails: check whether your browser trusts HTTPS and whether 
 ```bash
 npx claude-relay              # Default (port 2633)
 npx claude-relay -p 8080      # Specify port
-npx claude-relay -y           # Skip interactive prompts (accept defaults)
+npx claude-relay --yes        # Skip interactive prompts (accept defaults)
 npx claude-relay -y --pin 123456
                               # Non-interactive with PIN (for scripts/CI)
 npx claude-relay --no-https   # Disable HTTPS
@@ -196,6 +196,7 @@ npx claude-relay --list       # List registered projects
 npx claude-relay --shutdown   # Stop the running daemon
 npx claude-relay --dangerously-skip-permissions
                               # Bypass all permission prompts (PIN required during setup)
+npx claude-relay --dev        # Development mode (foreground, auto-restart on lib/ changes, port 2635)
 ```
 
 ## Requirements
@@ -204,6 +205,20 @@ npx claude-relay --dangerously-skip-permissions
 * Node.js 18+
 * [mkcert](https://github.com/FiloSottile/mkcert) - For push notifications (optional)
 * [Tailscale](https://tailscale.com) - For remote access (optional)
+
+## Why claude-relay?
+
+**Why not just use tmux + Termius?**
+You can monitor the terminal remotely, but there are no push notifications and no way to approve permission requests without switching back to the terminal. On a phone, navigating a raw terminal session is clunky. You end up checking manually instead of getting notified, and the experience never feels native.
+
+**Why not just add hooks to send notifications?**
+Hooks with ntfy or Pushover can get you push notifications, but you still need shell scripts, config files, and third-party accounts just to get alerts. And once you get the notification, there is no UI to approve or reject from. You are back to opening a terminal. claude-relay gives you notifications, a one-tap approval UI, and a full web interface with a single command.
+
+**Why not use Claude Code Desktop?**
+The desktop app works great on your computer, but there is no mobile version. To access sessions from your phone, you need remote sessions on Anthropic's cloud, which requires pushing your code to GitHub first. claude-relay runs entirely on your machine and lets you connect from any device on your network.
+
+**Why not use Happy Coder?**
+Happy Coder requires installing a native app and routes through its own relay server with end-to-end encryption. claude-relay *is* the relay server, running on your machine. Open a URL and you are in. No app install, no signup, nothing leaves your network.
 
 ## Architecture
 
