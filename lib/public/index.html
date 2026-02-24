@@ -55,7 +55,7 @@
     <div id="sidebar-panel-sessions" class="sidebar-panel">
       <div id="session-actions">
         <button id="new-session-btn"><i data-lucide="plus"></i> <span>New session</span></button>
-        <button id="resume-session-btn"><i data-lucide="link"></i> <span>Resume with ID</span></button>
+        <button id="resume-session-btn" title="Resume a CLI session"><i data-lucide="terminal"></i> <span>Resume CLI</span></button>
         <button id="file-browser-btn"><i data-lucide="folder-tree"></i> <span>File browser</span></button>
         <button id="terminal-sidebar-btn"><i data-lucide="square-terminal"></i> <span>Terminal</span></button>
       </div>
@@ -369,16 +369,20 @@
 
 <div id="resume-modal" class="hidden">
   <div class="confirm-backdrop"></div>
-  <div class="confirm-dialog">
+  <div class="confirm-dialog resume-picker-dialog">
     <div class="resume-modal-title">Resume CLI session</div>
-    <div class="resume-modal-body">
-      <p>Paste a session ID to continue a CLI conversation here.</p>
-      <div class="resume-modal-hint">Run <code>claude conversation list</code> in your terminal to find session IDs.</div>
-      <input type="text" id="resume-session-input" placeholder="Session ID" autocomplete="off" spellcheck="false">
+    <div class="resume-picker-body">
+      <div id="resume-picker-loading" class="resume-picker-loading">
+        <div class="resume-picker-spinner"></div>
+        <span>Loading sessions...</span>
+      </div>
+      <div id="resume-picker-empty" class="resume-picker-empty hidden">
+        No CLI sessions found for this project.
+      </div>
+      <div id="resume-picker-list" class="resume-picker-list hidden"></div>
     </div>
     <div class="confirm-actions">
       <button class="confirm-btn confirm-cancel" id="resume-cancel">Cancel</button>
-      <button class="confirm-btn confirm-ok" id="resume-ok">Resume</button>
     </div>
   </div>
 </div>
