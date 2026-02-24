@@ -414,7 +414,6 @@
 
 .terminal-tabs {
   display: flex;
-  flex: 1;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   gap: 0;
@@ -423,6 +422,25 @@
 }
 
 .terminal-tabs::-webkit-scrollbar { display: none; }
+
+.terminal-new-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0;
+  margin: 4px 2px;
+  transition: background 0.15s, color 0.15s;
+}
+.terminal-new-tab-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.terminal-new-tab-btn .lucide { width: 14px; height: 14px; }
 
 .terminal-tab {
   display: flex;
@@ -483,6 +501,7 @@
   gap: 2px;
   padding: 0 8px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* Wide screens: split panel beside #app */
