@@ -1175,7 +1175,7 @@ function setup(callback) {
 // ==============================
 // Fork the daemon process
 // ==============================
-async function forkDaemon(pin, keepAwake, extraProjects) {
+async function forkDaemon(pin, keepAwake, extraProjects, addCwd) {
   var ip = getLocalIP();
   var hasTls = false;
 
@@ -1197,12 +1197,18 @@ async function forkDaemon(pin, keepAwake, extraProjects) {
     return;
   }
 
-  var slug = generateSlug(cwd, []);
-  var allProjects = [{ path: cwd, slug: slug, addedAt: Date.now() }];
+  var allProjects = [];
+  var usedSlugs = [];
+
+  // Only include cwd if explicitly requested
+  if (addCwd) {
+    var slug = generateSlug(cwd, []);
+    allProjects.push({ path: cwd, slug: slug, addedAt: Date.now() });
+    usedSlugs.push(slug);
+  }
 
   // Add restored projects (from ~/.clayrc)
   if (extraProjects && extraProjects.length > 0) {
-    var usedSlugs = [slug];
     for (var ep = 0; ep < extraProjects.length; ep++) {
       var rp = extraProjects[ep];
       if (rp.path === cwd) continue; // skip if same as cwd
@@ -2079,7 +2085,8 @@ var currentVersion = require("../package.json").version;
       if (autoRestorable.length > 0) {
         console.log("  " + sym.done + "  Restoring " + autoRestorable.length + " previous project(s)");
       }
-      await forkDaemon(pin, false, autoRestorable.length > 0 ? autoRestorable : undefined);
+      var hasRestorable = autoRestorable.length > 0;
+      await forkDaemon(pin, false, hasRestorable ? autoRestorable : undefined, !hasRestorable);
     } else {
       setup(function (pin, keepAwake) {
         if (dangerouslySkipPermissions && !pin) {
@@ -2088,6 +2095,7 @@ var currentVersion = require("../package.json").version;
           process.exit(1);
           return;
         }
+
         // Check ~/.clayrc for previous projects to restore
         var rc = loadClayrc();
         var restorable = (rc.recentProjects || []).filter(function (p) {
@@ -2096,13 +2104,13 @@ var currentVersion = require("../package.json").version;
 
         if (restorable.length > 0) {
           promptRestoreProjects(restorable, function (selected) {
-            forkDaemon(pin, keepAwake, selected);
+            forkDaemon(pin, keepAwake, selected, false);
           });
         } else {
           log(sym.bar);
           log(sym.end + "  " + a.dim + "Starting relay..." + a.reset);
           log("");
-          forkDaemon(pin, keepAwake);
+          forkDaemon(pin, keepAwake, undefined, true);
         }
       });
     }
