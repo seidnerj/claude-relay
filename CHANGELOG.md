@@ -2,6 +2,30 @@
 
 ## WIP
 
+## v2.4.0
+
+- Add CLI session picker: browse and resume CLI sessions from the web UI with conversation history (#107)
+  - "Resume CLI" button in sidebar lists sessions from `~/.claude/projects/` JSONL files
+  - Each session shows first prompt, relative time, model, and git branch
+  - Sessions already open in relay are filtered out; duplicate resume switches to existing session
+- Add/remove projects from web UI with path autocomplete (#131)
+  - VS Code Remote-style path input with server-side directory browsing
+  - Remove button (trash icon) on project dropdown items with confirmation
+  - Current project can now also be removed (redirects to dashboard)
+- Add `npm run dev` with foreground daemon and auto-restart on `lib/` file changes (#135)
+  - `--dev` flag or `npx claude-relay-dev` for development mode
+  - `fs.watch` on `lib/` (excluding `lib/public/`) with 300ms debounce
+  - Separate config dir `~/.claude-relay-dev/` and port 2635
+  - First-time setup runs automatically; config reused on subsequent runs
+- Stop auto-registering cwd as project on startup (#138)
+  - Only register cwd when no restorable projects exist from `~/.clayrc`
+  - `--yes` mode no longer adds unnecessary directories
+- Fix iOS Safari PWA: show guidance instead of broken notification toggle (#121)
+- Fix iOS Safari URL-encoding copied text (#123)
+- Fix incomplete turns on history replay and skip redundant delta renders (#129)
+- UI polish: terminal tab kill → trash icon, panel close → chevron-down, new tab button next to tabs
+- UI polish: add-project modal autocomplete only on focus, dismiss on click outside
+
 ## v2.3.1
 
 - Support `claude-relay-dev` running independently from production daemon (separate port 2635, config dir `~/.claude-relay-dev/`)
