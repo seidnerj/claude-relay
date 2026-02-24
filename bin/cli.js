@@ -8,7 +8,7 @@ var qrcode = require("qrcode-terminal");
 var net = require("net");
 
 // Detect dev mode before loading config (env must be set before require)
-var _isDev = process.argv[1] && path.basename(process.argv[1]) === "claude-relay-dev";
+var _isDev = (process.argv[1] && path.basename(process.argv[1]) === "claude-relay-dev") || process.argv.includes("--dev");
 if (_isDev) {
   process.env.CLAUDE_RELAY_HOME = path.join(os.homedir(), ".claude-relay-dev");
 }
@@ -53,6 +53,8 @@ for (var i = 0; i < args.length; i++) {
     useHttps = false;
   } else if (args[i] === "--no-update" || args[i] === "--skip-update") {
     skipUpdate = true;
+  } else if (args[i] === "--dev") {
+    // Already handled above for CLAUDE_RELAY_HOME, just skip
   } else if (args[i] === "--debug") {
     debugMode = true;
   } else if (args[i] === "-y" || args[i] === "--yes") {
@@ -93,6 +95,12 @@ for (var i = 0; i < args.length; i++) {
     console.log("                     Bypass all permission prompts (requires --pin)");
     process.exit(0);
   }
+}
+
+// Dev mode implies debug + skip update
+if (_isDev) {
+  debugMode = true;
+  skipUpdate = true;
 }
 
 // --- Handle --shutdown before anything else ---
@@ -1271,6 +1279,140 @@ async function forkDaemon(pin, keepAwake, extraProjects, addCwd) {
 }
 
 // ==============================
+// Dev mode — foreground daemon with file watching
+// ==============================
+async function devMode() {
+  var ip = getLocalIP();
+  var hasTls = false;
+
+  if (useHttps) {
+    var certPaths = ensureCerts(ip);
+    if (certPaths) hasTls = true;
+  }
+
+  var portFree = await isPortFree(port);
+  if (!portFree) {
+    console.log("\x1b[31m[dev] Port " + port + " is already in use.\x1b[0m");
+    process.exit(1);
+    return;
+  }
+
+  var slug = generateSlug(cwd, []);
+  var allProjects = [{ path: cwd, slug: slug, addedAt: Date.now() }];
+
+  // Restore previous projects
+  var rc = loadClayrc();
+  var restorable = (rc.recentProjects || []).filter(function (p) {
+    return p.path !== cwd && fs.existsSync(p.path);
+  });
+  var usedSlugs = [slug];
+  for (var ri = 0; ri < restorable.length; ri++) {
+    var rp = restorable[ri];
+    var rpSlug = generateSlug(rp.path, usedSlugs);
+    usedSlugs.push(rpSlug);
+    allProjects.push({ path: rp.path, slug: rpSlug, title: rp.title || undefined, addedAt: rp.addedAt || Date.now() });
+  }
+
+  var config = {
+    pid: null,
+    port: port,
+    pinHash: cliPin ? generateAuthToken(cliPin) : null,
+    tls: hasTls,
+    debug: true,
+    keepAwake: false,
+    dangerouslySkipPermissions: dangerouslySkipPermissions,
+    projects: allProjects,
+  };
+
+  ensureConfigDir();
+  saveConfig(config);
+
+  var daemonScript = path.join(__dirname, "..", "lib", "daemon.js");
+  var libDir = path.join(__dirname, "..", "lib");
+  var child = null;
+  var intentionalKill = false;
+  var debounceTimer = null;
+
+  function spawnDaemon() {
+    child = spawn(process.execPath, [daemonScript], {
+      stdio: ["ignore", "inherit", "inherit"],
+      env: Object.assign({}, process.env, {
+        CLAUDE_RELAY_CONFIG: configPath(),
+      }),
+    });
+
+    child.on("exit", function (code) {
+      child = null;
+      if (intentionalKill) {
+        intentionalKill = false;
+        return;
+      }
+      // Unexpected exit — auto restart
+      console.log("\x1b[33m[dev] Daemon exited (code " + code + "), restarting...\x1b[0m");
+      setTimeout(spawnDaemon, 500);
+    });
+  }
+
+  function restartDaemon() {
+    intentionalKill = true;
+    if (child) {
+      child.kill("SIGTERM");
+      // Give it a moment to shut down, then spawn
+      setTimeout(spawnDaemon, 300);
+    } else {
+      intentionalKill = false;
+      spawnDaemon();
+    }
+  }
+
+  var protocol = hasTls ? "https" : "http";
+  var url = protocol + "://" + ip + ":" + port;
+  console.log("\x1b[36m[dev]\x1b[0m Starting relay on port " + port + "...");
+  console.log("\x1b[36m[dev]\x1b[0m " + url);
+  console.log("\x1b[36m[dev]\x1b[0m Watching lib/ for changes (excluding lib/public/)");
+  console.log("");
+
+  spawnDaemon();
+
+  // Watch lib/ for server-side file changes
+  var watcher = fs.watch(libDir, { recursive: true }, function (eventType, filename) {
+    if (!filename) return;
+    // Skip client-side files — they're served from disk
+    if (filename.startsWith("public" + path.sep) || filename.startsWith("public/")) return;
+    // Skip non-JS files
+    if (!filename.endsWith(".js")) return;
+
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function () {
+      console.log("\x1b[36m[dev]\x1b[0m File changed: lib/" + filename);
+      console.log("\x1b[36m[dev]\x1b[0m Restarting...");
+      console.log("");
+      restartDaemon();
+    }, 300);
+  });
+
+  // Clean exit on Ctrl+C
+  process.on("SIGINT", function () {
+    console.log("\n\x1b[36m[dev]\x1b[0m Shutting down...");
+    watcher.close();
+    if (debounceTimer) clearTimeout(debounceTimer);
+    intentionalKill = true;
+    if (child) {
+      child.kill("SIGTERM");
+      child.on("exit", function () {
+        clearStaleConfig();
+        process.exit(0);
+      });
+      // Force kill after 3s
+      setTimeout(function () { process.exit(0); }, 3000);
+    } else {
+      clearStaleConfig();
+      process.exit(0);
+    }
+  });
+}
+
+// ==============================
 // Restart daemon with TLS enabled
 // ==============================
 async function restartDaemonWithTLS(config, callback) {
@@ -2003,6 +2145,20 @@ var currentVersion = require("../package.json").version;
 (async function () {
   var updated = await checkAndUpdate(currentVersion, skipUpdate);
   if (updated) return;
+
+  // Dev mode — foreground daemon with file watching
+  if (_isDev) {
+    var devConfig = loadConfig();
+    var devAlive = devConfig ? await isDaemonAliveAsync(devConfig) : false;
+    if (devAlive) {
+      console.log("\x1b[36m[dev]\x1b[0m Shutting down existing daemon...");
+      await sendIPCCommand(socketPath(), { cmd: "shutdown" });
+      clearStaleConfig();
+      await new Promise(function (resolve) { setTimeout(resolve, 500); });
+    }
+    await devMode();
+    return;
+  }
 
   var config = loadConfig();
   var alive = config ? await isDaemonAliveAsync(config) : false;
