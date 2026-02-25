@@ -4,22 +4,47 @@
 
 ## v2.4.0
 
-- Add CLI session picker: browse and resume CLI sessions from the web UI with conversation history (#107)
+- Add `--headless` flag for non-interactive daemon startup (#154)
+  - Implies `--yes` (skips all interactive prompts)
+  - Restores projects from `~/.clayrc`, forks daemon, exits CLI immediately
+  - Ideal for LaunchAgent / systemd auto-start on login
+- Add base16 theme system with 22 bundled themes and custom theme support
+  - Dark and light theme variants with theme picker UI
+  - Custom themes via `~/.claude-relay/themes/` JSON files
+  - Instant theme restore on page load via localStorage CSS cache (no flicker)
+- Show sub-agent (Task tool) activity in real-time (#77, #152)
+  - Nested sub-agent messages rendered inline under parent tool block
+  - Live streaming of sub-agent tool calls and results
+- Group consecutive tool calls with collapsed summary header (#153)
+  - Multiple sequential tool calls collapse into a single summary row
+  - Click to expand individual tool results
+- Redesign sidebar with inline project list and pinned sections (#155)
+  - Replace project dropdown with inline project list (GitHub-style)
+  - `[+]` icon buttons for new session and new project
+  - Pin TOOLS and SESSIONS/FILE BROWSER headers above scroll area
+  - FILE BROWSER header with refresh/close replaces back button
+  - Session search X button for quick clear
+  - Show session name in header with inline rename (pencil icon)
+  - "Star on GitHub" label in footer menu
+- Add CLI session picker: browse and resume CLI sessions from the web UI (#107)
   - "Resume CLI" button in sidebar lists sessions from `~/.claude/projects/` JSONL files
   - Each session shows first prompt, relative time, model, and git branch
   - Sessions already open in relay are filtered out; duplicate resume switches to existing session
 - Add/remove projects from web UI with path autocomplete (#131)
   - VS Code Remote-style path input with server-side directory browsing
-  - Remove button (trash icon) on project dropdown items with confirmation
+  - Remove button (trash icon) on project items with confirmation
   - Current project can now also be removed (redirects to dashboard)
 - Add `npm run dev` with foreground daemon and auto-restart on `lib/` file changes (#135)
   - `--dev` flag or `npx claude-relay-dev` for development mode
   - `fs.watch` on `lib/` (excluding `lib/public/`) with 300ms debounce
   - Separate config dir `~/.claude-relay-dev/` and port 2635
   - First-time setup runs automatically; config reused on subsequent runs
+- Add mermaid diagram rendering in file browser markdown view
 - Stop auto-registering cwd as project on startup (#138)
   - Only register cwd when no restorable projects exist from `~/.clayrc`
   - `--yes` mode no longer adds unnecessary directories
+- Fix theme flickering on project switch (localStorage CSS variable cache in `<head>`)
+- Fix terminal border color mismatch and chevron direction
 - Fix iOS Safari PWA: show guidance instead of broken notification toggle (#121)
 - Fix iOS Safari URL-encoding copied text (#123)
 - Fix incomplete turns on history replay and skip redundant delta renders (#129)
