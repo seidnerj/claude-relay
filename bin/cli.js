@@ -40,6 +40,7 @@ var addPath = null;
 var removePath = null;
 var listMode = false;
 var dangerouslySkipPermissions = false;
+var headlessMode = false;
 
 for (var i = 0; i < args.length; i++) {
   if (args[i] === "-p" || args[i] === "--port") {
@@ -72,6 +73,9 @@ for (var i = 0; i < args.length; i++) {
     i++;
   } else if (args[i] === "--list") {
     listMode = true;
+  } else if (args[i] === "--headless") {
+    headlessMode = true;
+    autoYes = true;
   } else if (args[i] === "--dangerously-skip-permissions") {
     dangerouslySkipPermissions = true;
   } else if (args[i] === "-h" || args[i] === "--help") {
@@ -91,6 +95,7 @@ for (var i = 0; i < args.length; i++) {
     console.log("  --add <path>       Add a project directory (use '.' for current)");
     console.log("  --remove <path>    Remove a project directory");
     console.log("  --list             List all registered projects");
+    console.log("  --headless         Start daemon and exit immediately (implies --yes)");
     console.log("  --dangerously-skip-permissions");
     console.log("                     Bypass all permission prompts (requires --pin)");
     process.exit(0);
@@ -1271,6 +1276,17 @@ async function forkDaemon(pin, keepAwake, extraProjects, addCwd) {
     log(a.dim + logFile + a.reset);
     clearStaleConfig();
     process.exit(1);
+    return;
+  }
+
+  // Headless mode — print status and exit immediately
+  if (headlessMode) {
+    var protocol = config.tls ? "https" : "http";
+    var url = protocol + "://" + ip + ":" + config.port;
+    console.log("  " + sym.done + "  Daemon started (PID " + config.pid + ")");
+    console.log("  " + sym.done + "  " + url);
+    console.log("  " + sym.done + "  Headless mode — exiting CLI");
+    process.exit(0);
     return;
   }
 
