@@ -40,7 +40,10 @@ var addPath = null;
 var removePath = null;
 var listMode = false;
 var dangerouslySkipPermissions = false;
+var bare = false;
 var headlessMode = false;
+var installLaunchAgent = false;
+var uninstallLaunchAgent = false;
 
 for (var i = 0; i < args.length; i++) {
   if (args[i] === "-p" || args[i] === "--port") {
@@ -78,6 +81,12 @@ for (var i = 0; i < args.length; i++) {
     autoYes = true;
   } else if (args[i] === "--dangerously-skip-permissions") {
     dangerouslySkipPermissions = true;
+  } else if (args[i] === "--bare") {
+    bare = true;
+  } else if (args[i] === "--install-launch-agent") {
+    installLaunchAgent = true;
+  } else if (args[i] === "--uninstall-launch-agent") {
+    uninstallLaunchAgent = true;
   } else if (args[i] === "-h" || args[i] === "--help") {
     console.log("Usage: claude-relay [-p|--port <port>] [--no-https] [--no-update] [--debug] [-y|--yes] [--pin <pin>] [--shutdown]");
     console.log("       claude-relay --add <path>     Add a project to the running daemon");
@@ -96,10 +105,19 @@ for (var i = 0; i < args.length; i++) {
     console.log("  --remove <path>    Remove a project directory");
     console.log("  --list             List all registered projects");
     console.log("  --headless         Start daemon and exit immediately (implies --yes)");
+    console.log("  --bare             Don't register the current directory as a project");
+    console.log("  --install-launch-agent   Install macOS launchd agent for login start");
+    console.log("  --uninstall-launch-agent Remove macOS launchd agent");
     console.log("  --dangerously-skip-permissions");
     console.log("                     Bypass all permission prompts (requires --pin)");
     process.exit(0);
   }
+}
+
+// Apply persistent bare default from ~/.clayrc (overridden by explicit --bare)
+if (!bare) {
+  var _rc = loadClayrc();
+  if (_rc.bareDefault) bare = true;
 }
 
 // Dev mode implies debug + skip update
@@ -212,6 +230,26 @@ if (listMode) {
       process.exit(0);
     });
   });
+  return;
+}
+
+// --- Handle --install-launch-agent ---
+if (installLaunchAgent) {
+  if (process.platform !== "darwin") {
+    console.error("Launch agent install is only supported on macOS.");
+    process.exit(1);
+  }
+  doInstallLaunchAgent();
+  return;
+}
+
+// --- Handle --uninstall-launch-agent ---
+if (uninstallLaunchAgent) {
+  if (process.platform !== "darwin") {
+    console.error("Launch agent removal is only supported on macOS.");
+    process.exit(1);
+  }
+  doUninstallLaunchAgent();
   return;
 }
 
@@ -351,7 +389,7 @@ function onDaemonDied() {
   restartDaemonFromConfig();
 }
 
-async function restartDaemonFromConfig() {
+async function restartDaemonFromConfig(onReady) {
   var lastConfig = loadConfig();
   if (!lastConfig || !lastConfig.projects) {
     log(a.red + "     No config found. Cannot restart." + a.reset);
@@ -417,7 +455,11 @@ async function restartDaemonFromConfig() {
   var ip = getLocalIP();
   log(sym.done + "  " + a.green + "Server restarted successfully." + a.reset);
   log("");
-  showMainMenu(newConfig, ip);
+  if (onReady) {
+    onReady(newConfig, ip);
+  } else {
+    showMainMenu(newConfig, ip);
+  }
 }
 
 // --- Network ---
@@ -1439,6 +1481,151 @@ async function devMode(pin, keepAwake, existingPinHash) {
 }
 
 // ==============================
+// Launch agent helpers (macOS)
+// ==============================
+function doInstallLaunchAgent(onSuccess) {
+  var plistDir = path.join(os.homedir(), "Library", "LaunchAgents");
+  var plistPath = path.join(plistDir, "com.clay-relay.plist");
+  var daemonScript = path.join(__dirname, "..", "lib", "daemon.js");
+  var configFile = configPath();
+  var logFile = logPath();
+  var home = os.homedir();
+
+  // Require existing config (user must have run setup first)
+  var existing = loadConfig();
+  if (!existing || !existing.port) {
+    console.error("No relay config found.");
+    console.error("Run `claude-relay` first to complete initial setup, then install the launch agent.");
+    process.exit(1);
+  }
+
+  fs.mkdirSync(plistDir, { recursive: true });
+
+  var plist = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+    '<plist version="1.0">',
+    '<dict>',
+    '  <key>Label</key>',
+    '  <string>com.clay-relay</string>',
+    '  <key>ProgramArguments</key>',
+    '  <array>',
+    '    <string>' + process.execPath + '</string>',
+    '    <string>' + daemonScript + '</string>',
+    '  </array>',
+    '  <key>EnvironmentVariables</key>',
+    '  <dict>',
+    '    <key>HOME</key>',
+    '    <string>' + home + '</string>',
+    '    <key>CLAUDE_RELAY_CONFIG</key>',
+    '    <string>' + configFile + '</string>',
+    '    <key>PATH</key>',
+    '    <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>',
+    '    <key>CLAUDE_RELAY_KEEP_AWAKE</key>',
+    '    <string>1</string>',
+    '    <key>CLAUDE_RELAY_BARE</key>',
+    '    <string>1</string>',
+    '  </dict>',
+    '  <key>RunAtLoad</key>',
+    '  <true/>',
+    '  <key>KeepAlive</key>',
+    '  <true/>',
+    '  <key>StandardOutPath</key>',
+    '  <string>' + logFile + '</string>',
+    '  <key>StandardErrorPath</key>',
+    '  <string>' + logFile + '</string>',
+    '</dict>',
+    '</plist>',
+  ].join('\n');
+
+  fs.writeFileSync(plistPath, plist);
+
+  // Bootstrap with launchctl (macOS 10.12+)
+  var uid = process.getuid();
+  var { execSync: _execSync } = require("child_process");
+
+  // Check if the service is already registered with launchd
+  var alreadyLoaded = false;
+  try {
+    _execSync('launchctl list com.clay-relay', { stdio: "pipe" });
+    alreadyLoaded = true;
+  } catch (e) {}
+
+  if (alreadyLoaded) {
+    // Unload by service target — launchd will also kill the process it owns
+    try { _execSync('launchctl bootout gui/' + uid + '/com.clay-relay', { stdio: "pipe" }); } catch (e) {}
+    _bootstrapLaunchAgent(uid, plistPath, alreadyLoaded, _execSync, onSuccess);
+  } else {
+    // Daemon may be running outside launchd — shut it down via IPC so launchd
+    // can start a fresh instance without hitting a port/socket conflict.
+    var _laConfig = loadConfig();
+    if (isDaemonAlive(_laConfig)) {
+      // Stop the watcher first so it can't race us to process.exit(0)
+      stopDaemonWatcher();
+      sendIPCCommand(socketPath(), { cmd: "shutdown" }).then(function () {
+        setTimeout(function () {
+          _bootstrapLaunchAgent(uid, plistPath, alreadyLoaded, _execSync, onSuccess);
+        }, 800);
+      }).catch(function () {
+        _bootstrapLaunchAgent(uid, plistPath, alreadyLoaded, _execSync, onSuccess);
+      });
+    } else {
+      _bootstrapLaunchAgent(uid, plistPath, alreadyLoaded, _execSync, onSuccess);
+    }
+  }
+}
+
+function _bootstrapLaunchAgent(uid, plistPath, alreadyLoaded, execFn, onSuccess) {
+  try {
+    // Enable the service in launchd's database before bootstrapping.
+    // launchctl bootout (and any previous removal) marks the service as
+    // disabled, causing bootstrap to fail with error 5 (Input/output error).
+    try { execFn('launchctl enable gui/' + uid + '/com.clay-relay', { stdio: "pipe" }); } catch (e) {}
+    execFn('launchctl bootstrap gui/' + uid + ' "' + plistPath + '"', { stdio: "pipe" });
+    if (alreadyLoaded) {
+      console.log("  " + a.green + "Launch agent updated." + a.reset);
+    } else {
+      console.log("  " + a.green + "Launch agent installed." + a.reset);
+      console.log("  " + a.dim + "Relay daemon will start automatically at login." + a.reset);
+    }
+    console.log("  " + a.dim + "Plist: " + plistPath + a.reset);
+  } catch (e) {
+    var _laErr = (e.stderr ? e.stderr.toString().trim() : "") || e.message || String(e);
+    console.log("  " + a.yellow + "Plist written to " + plistPath + " but launchctl failed." + a.reset);
+    if (_laErr) console.log("  " + a.dim + "Error: " + _laErr + a.reset);
+    console.log("  " + a.dim + "You can load it manually: launchctl bootstrap gui/" + uid + ' "' + plistPath + '"' + a.reset);
+    process.exit(0);
+    return;
+  }
+  if (onSuccess) {
+    onSuccess();
+  } else {
+    process.exit(0);
+  }
+}
+
+function doUninstallLaunchAgent(onSuccess) {
+  var plistPath = path.join(os.homedir(), "Library", "LaunchAgents", "com.clay-relay.plist");
+  var { execSync: _execSync2 } = require("child_process");
+  var uid = process.getuid();
+  // Stop watcher so it can't race us after the daemon is killed by bootout
+  stopDaemonWatcher();
+  // Bootout by service target — kills the launchd-managed daemon process
+  try { _execSync2('launchctl bootout gui/' + uid + '/com.clay-relay', { stdio: "pipe" }); } catch (e) {}
+  try {
+    fs.unlinkSync(plistPath);
+    console.log("  " + a.green + "Launch agent removed." + a.reset);
+  } catch (e) {
+    console.log("  " + a.dim + "No launch agent found." + a.reset);
+  }
+  if (onSuccess) {
+    onSuccess();
+  } else {
+    process.exit(0);
+  }
+}
+
+// ==============================
 // Restart daemon with TLS enabled
 // ==============================
 async function restartDaemonWithTLS(config, callback) {
@@ -2065,13 +2252,23 @@ function showSettingsMenu(config, ip) {
       ? a.green + "On" + a.reset
       : a.dim + "Off" + a.reset;
 
+    var _rc2 = loadClayrc();
+    var bareDefault = _rc2.bareDefault || false;
+    var bareStatus = bareDefault ? a.green + "On" + a.reset : a.dim + "Off" + a.reset;
+
+    var plistPath = path.join(os.homedir(), "Library", "LaunchAgents", "com.clay-relay.plist");
+    var launchAgentInstalled = process.platform === "darwin" && fs.existsSync(plistPath);
+    var launchStatus = launchAgentInstalled ? a.green + "Installed" + a.reset : a.dim + "Off" + a.reset;
+
     log(sym.bar + "  Tailscale    " + tsStatus);
     log(sym.bar + "  mkcert       " + mcStatus);
     log(sym.bar + "  HTTPS        " + tlsStatus);
     log(sym.bar + "  PIN          " + pinStatus);
     if (process.platform === "darwin") {
       log(sym.bar + "  Keep awake   " + awakeStatus);
+      log(sym.bar + "  Launch at login " + launchStatus);
     }
+    log(sym.bar + "  Bare mode    " + bareStatus);
     log(sym.bar);
 
     // Build items
@@ -2087,7 +2284,9 @@ function showSettingsMenu(config, ip) {
     }
     if (process.platform === "darwin") {
       items.push({ label: isAwake ? "Disable keep awake" : "Enable keep awake", value: "awake" });
+      items.push({ label: launchAgentInstalled ? "Disable launch at login" : "Enable launch at login", value: "launch_agent" });
     }
+    items.push({ label: bareDefault ? "Disable bare mode" : "Enable bare mode", value: "bare" });
     items.push({ label: "View logs", value: "logs" });
     items.push({ label: "Back", value: "back" });
 
@@ -2152,6 +2351,47 @@ function showSettingsMenu(config, ip) {
           }
           showSettingsMenu(config, ip);
         });
+        break;
+
+      case "launch_agent":
+        if (launchAgentInstalled) {
+          doUninstallLaunchAgent(function () {
+            log("");
+            log(sym.warn + "  " + a.dim + "Restarting daemon..." + a.reset);
+            restartDaemonFromConfig(function (newConfig, newIp) {
+              showSettingsMenu(newConfig, newIp);
+            });
+          });
+        } else {
+          doInstallLaunchAgent(function () {
+            log("");
+            log(sym.warn + "  " + a.dim + "Reconnecting to daemon..." + a.reset);
+            var _laAttempts = 0;
+            var _laPoller = setInterval(function () {
+              _laAttempts++;
+              var _laNewConfig = loadConfig();
+              isDaemonAliveAsync(_laNewConfig).then(function (alive) {
+                if (alive) {
+                  clearInterval(_laPoller);
+                  startDaemonWatcher();
+                  showSettingsMenu(_laNewConfig, getLocalIP());
+                } else if (_laAttempts >= 20) {
+                  clearInterval(_laPoller);
+                  log(sym.warn + "  " + a.yellow + "Daemon is taking longer than expected to start." + a.reset);
+                  log(a.dim + "  Run `claude-relay` again to reconnect." + a.reset);
+                  process.exit(0);
+                }
+              });
+            }, 500);
+          });
+        }
+        break;
+
+      case "bare":
+        var _rc3 = loadClayrc();
+        _rc3.bareDefault = !(_rc3.bareDefault || false);
+        saveClayrc(_rc3);
+        showSettingsMenu(config, ip);
         break;
 
       case "back":
@@ -2225,7 +2465,10 @@ var currentVersion = require("../package.json").version;
       }
     }
 
-    if (!cwdRegistered) {
+    // Daemon started by launchd signals bare mode — respect it
+    if (status.bare) bare = true;
+
+    if (!cwdRegistered && !bare) {
       var slug = path.basename(cwd).toLowerCase().replace(/[^a-z0-9_-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "project";
       console.clear();
       printLogo();
