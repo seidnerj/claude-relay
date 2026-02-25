@@ -712,3 +712,58 @@
   color: var(--text-dimmer);
 }
 
+/* --- Transcript mode: inline separator in #messages + status bar --- */
+
+#transcript-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 5px 16px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-dimmer);
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  background: var(--bg);
+}
+#transcript-bar.hidden { display: none; }
+.transcript-bar-hint { color: var(--text-dimmer); flex: 1; text-align: center; }
+.transcript-bar-btn {
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none;
+  color: var(--text-dimmer); cursor: pointer;
+  padding: 4px; border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.transcript-bar-btn:hover { color: var(--text); background: var(--overlay-active); }
+.transcript-bar-btn .lucide { width: 14px; height: 14px; }
+
+#transcript-separator {
+  display: flex;
+  align-items: center;
+  padding: 6px 16px;
+  gap: 10px;
+  margin: 4px 0;
+  max-width: var(--content-width);
+  width: 100%;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
+#transcript-separator::before,
+#transcript-separator::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+.transcript-sep-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  white-space: nowrap;
+}
+
+.transcript-hidden { display: none !important; }

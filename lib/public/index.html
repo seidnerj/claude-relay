@@ -181,6 +181,12 @@
       <div class="connect-status" id="connect-status">Connecting...</div>
     </div>
     <div id="messages"></div>
+    <div id="transcript-bar" class="hidden">
+      <span class="transcript-bar-hint"></span>
+      <button id="transcript-copy-btn" class="transcript-bar-btn" title="Copy transcript">
+        <i data-lucide="copy"></i>
+      </button>
+    </div>
 
     <div id="info-panels">
       <div id="usage-panel" class="hidden">
@@ -280,6 +286,13 @@
               </div>
             </div>
             <div id="input-bottom-right">
+              <!-- mobile-only: history nav, search, transcript -->
+              <div id="mobile-kb-btns">
+                <button id="mb-hist-up" class="mobile-kb-btn" title="Previous message" aria-label="Previous message"><i data-lucide="chevron-up"></i></button>
+                <button id="mb-hist-down" class="mobile-kb-btn" title="Next message" aria-label="Next message"><i data-lucide="chevron-down"></i></button>
+                <button id="mb-search" class="mobile-kb-btn" title="Search history" aria-label="Search history"><i data-lucide="search"></i></button>
+                <button id="mb-transcript" class="mobile-kb-btn" title="Transcript" aria-label="Transcript"><i data-lucide="scroll-text"></i></button>
+              </div>
               <div id="model-menu-wrap" class="hidden">
                 <button id="model-btn" title="Model"><span id="model-label"></span> <i data-lucide="chevron-down"></i></button>
                 <div id="model-menu" class="hidden"></div>

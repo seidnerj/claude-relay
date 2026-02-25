@@ -510,3 +510,46 @@
   pointer-events: none;
   opacity: 0.5;
 }
+
+/* --- History search bar (reverse-i-search) --- */
+.history-search-bar {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px 2px;
+  font-size: 12px;
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  color: var(--text-muted);
+  gap: 0;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 2px;
+}
+.history-search-bar.hidden { display: none; }
+.hsb-label { color: var(--text-secondary); }
+.hsb-sep { color: var(--text-muted); }
+.hsb-query { color: var(--accent); font-weight: 600; }
+
+/* --- Mobile keyboard shortcut buttons (touch devices only) --- */
+#mobile-kb-btns {
+  display: none;
+  gap: 2px;
+  align-items: center;
+}
+@media (pointer: coarse) {
+  #mobile-kb-btns { display: flex; }
+}
+.mobile-kb-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  touch-action: manipulation;
+}
+.mobile-kb-btn:hover { background: var(--overlay-active); color: var(--text); }
+.mobile-kb-btn .lucide { width: 18px; height: 18px; }
