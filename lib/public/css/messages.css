@@ -889,6 +889,103 @@ pre.mermaid-error {
 }
 
 /* ==========================================================================
+   Tool Groups
+   ========================================================================== */
+
+.tool-group {
+  max-width: var(--content-width);
+  margin: 4px auto;
+  padding: 0 20px;
+}
+
+.tool-group-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 12px;
+  user-select: none;
+  background: rgba(var(--overlay-rgb), 0.03);
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.tool-group-header:hover {
+  background: rgba(var(--overlay-rgb), 0.06);
+}
+
+.tool-group-chevron {
+  color: var(--text-dimmer);
+  transition: transform 0.2s;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.tool-group-chevron .lucide {
+  width: 14px;
+  height: 14px;
+}
+
+.tool-group:not(.collapsed) .tool-group-chevron {
+  transform: rotate(90deg);
+}
+
+.tool-group-bullet {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.tool-group.done .tool-group-bullet {
+  background: var(--text-dimmer);
+  animation: none;
+}
+
+.tool-group.done .tool-group-bullet.error {
+  background: var(--error);
+}
+
+.tool-group-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.tool-group.done .tool-group-label {
+  color: var(--text-dimmer);
+}
+
+.tool-group-status-icon {
+  flex-shrink: 0;
+  width: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tool-group-status-icon .lucide { width: 14px; height: 14px; }
+.tool-group-status-icon .icon-spin .lucide { width: 14px; height: 14px; color: var(--text-muted); }
+.tool-group-status-icon .check { color: var(--text-dimmer); }
+.tool-group-status-icon .err-icon { color: var(--error); }
+
+.tool-group.done .tool-group-status-icon .icon-spin { display: none; }
+
+/* Collapsed state: hide individual tool items */
+.tool-group.collapsed .tool-group-items {
+  display: none;
+}
+
+/* Inside a group, tool-items defer layout to the group container */
+.tool-group .tool-item {
+  max-width: none;
+  margin: 2px 0;
+  padding: 0;
+}
+
+/* ==========================================================================
    Plan Mode
    ========================================================================== */
 
