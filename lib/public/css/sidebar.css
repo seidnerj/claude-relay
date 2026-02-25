@@ -785,3 +785,31 @@
   opacity: 1;
 }
 
+/* --- Color mode toggle bar --- */
+.color-mode-bar {
+  display: flex;
+  gap: 2px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.color-mode-btn {
+  flex: 1;
+  padding: 5px 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.color-mode-btn:hover {
+  background: rgba(var(--overlay-rgb), 0.08);
+  color: var(--text-secondary);
+}
+.color-mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
