@@ -9,13 +9,13 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  scrollbar-color: rgba(var(--overlay-rgb),0.15) transparent;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+::-webkit-scrollbar-thumb { background: rgba(var(--overlay-rgb),0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--overlay-rgb),0.25); }
 
 :root {
   --bg: #2F2E2B;
@@ -34,6 +34,40 @@
   --user-bubble: #46423A;
   --error: #E5534B;
   --success: #57AB5A;
+  --warning: #E5A84B;
+  --accent-8: rgba(218, 119, 86, 0.08);
+  --accent-12: rgba(218, 119, 86, 0.12);
+  --accent-15: rgba(218, 119, 86, 0.15);
+  --accent-20: rgba(218, 119, 86, 0.20);
+  --accent-25: rgba(218, 119, 86, 0.25);
+  --accent-30: rgba(218, 119, 86, 0.30);
+  --error-8: rgba(229, 83, 75, 0.08);
+  --error-12: rgba(229, 83, 75, 0.12);
+  --error-15: rgba(229, 83, 75, 0.15);
+  --error-25: rgba(229, 83, 75, 0.25);
+  --success-8: rgba(87, 171, 90, 0.08);
+  --success-12: rgba(87, 171, 90, 0.12);
+  --success-15: rgba(87, 171, 90, 0.15);
+  --success-25: rgba(87, 171, 90, 0.25);
+  --warning-bg: rgba(229, 168, 75, 0.12);
+  --overlay-rgb: 255,255,255;
+  --shadow-rgb: 0,0,0;
+  --hl-comment: #6D6860;
+  --hl-keyword: #C586C0;
+  --hl-string: #57AB5A;
+  --hl-number: #DA7756;
+  --hl-function: #569CD6;
+  --hl-variable: #E5534B;
+  --hl-type: #E5A84B;
+  --hl-constant: #DA7756;
+  --hl-tag: #E5534B;
+  --hl-attr: #569CD6;
+  --hl-regexp: #4EC9B0;
+  --hl-meta: #D7BA7D;
+  --hl-builtin: #DA7756;
+  --hl-symbol: #D7BA7D;
+  --hl-addition: #57AB5A;
+  --hl-deletion: #E5534B;
   --sidebar-bg: #262522;
   --sidebar-hover: #302E2A;
   --sidebar-active: #3A3834;
@@ -96,7 +130,7 @@ html, body {
   opacity: 0;
   transition: opacity 0.2s, transform 0.2s;
   pointer-events: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(var(--shadow-rgb), 0.3);
 }
 
 .toast.visible {
@@ -104,8 +138,8 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 .toast.toast-warn {
-  background: #3a2a00;
-  border-color: #7a5a00;
-  color: #ffc107;
+  background: var(--warning-bg);
+  border-color: var(--warning);
+  color: var(--warning);
 }
 
