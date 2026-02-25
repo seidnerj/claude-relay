@@ -18,8 +18,8 @@
   justify-content: center;
   gap: 8px;
   padding: 8px 16px;
-  background: rgba(218, 119, 86, 0.08);
-  border-bottom: 1px solid rgba(218, 119, 86, 0.15);
+  background: var(--accent-8);
+  border-bottom: 1px solid var(--accent-15);
   font-size: 12px;
   color: var(--text-secondary);
 }
@@ -73,8 +73,8 @@
   justify-content: center;
   gap: 8px;
   padding: 8px 16px;
-  background: rgba(87, 171, 90, 0.08);
-  border-bottom: 1px solid rgba(87, 171, 90, 0.15);
+  background: var(--success-8);
+  border-bottom: 1px solid var(--success-15);
   font-size: 12px;
   color: var(--text-secondary);
   position: relative;
@@ -92,8 +92,8 @@
 .update-banner-text strong { color: var(--text); font-weight: 600; }
 
 #update-how {
-  background: rgba(87, 171, 90, 0.15);
-  border: 1px solid rgba(87, 171, 90, 0.25);
+  background: var(--success-15);
+  border: 1px solid var(--success-25);
   border-radius: 6px;
   color: var(--success);
   cursor: pointer;
@@ -105,7 +105,7 @@
   transition: background 0.15s;
 }
 
-#update-how:hover { background: rgba(87, 171, 90, 0.25); }
+#update-how:hover { background: var(--success-25); }
 
 #update-popover {
   display: none;
@@ -118,7 +118,7 @@
   border-radius: 10px;
   padding: 12px 16px;
   z-index: 200;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.4);
   white-space: nowrap;
 }
 
@@ -140,7 +140,7 @@
   font-family: "SF Mono", Menlo, Monaco, monospace;
   font-size: 13px;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--overlay-rgb), 0.06);
   padding: 6px 12px;
   border-radius: 6px;
   user-select: all;
@@ -186,11 +186,11 @@
   justify-content: center;
   gap: 8px;
   padding: 7px 16px;
-  background: rgba(229, 83, 75, 0.12);
-  border-bottom: 1px solid rgba(229, 83, 75, 0.25);
+  background: var(--error-12);
+  border-bottom: 1px solid var(--error-25);
   font-size: 12px;
   font-weight: 500;
-  color: #E5534B;
+  color: var(--error);
 }
 
 #skip-perms-banner.hidden { display: none; }
@@ -211,7 +211,7 @@
 .confirm-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--shadow-rgb), 0.5);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
 }
@@ -224,7 +224,7 @@
   padding: 20px 24px;
   max-width: 320px;
   width: 90%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(var(--shadow-rgb), 0.5);
 }
 
 .confirm-text {
@@ -341,13 +341,13 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--overlay-rgb), 0.03);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
 }
 
-.rewind-file-header:hover { background: rgba(255, 255, 255, 0.06); }
+.rewind-file-header:hover { background: rgba(var(--overlay-rgb), 0.06); }
 
 .rewind-file-chevron {
   display: inline-flex;
@@ -377,8 +377,8 @@
   flex-shrink: 0;
 }
 
-.rewind-file-stats .stat-add { color: #3FB950; }
-.rewind-file-stats .stat-del { color: #F85149; }
+.rewind-file-stats .stat-add { color: var(--success); }
+.rewind-file-stats .stat-del { color: var(--error); }
 
 .rewind-file-diff {
   display: none;
@@ -458,7 +458,7 @@
 }
 
 .cli-session-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--overlay-rgb), 0.05);
   border-color: var(--border-subtle);
 }
 
@@ -475,7 +475,7 @@
 }
 
 .cli-session-meta .badge {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(var(--overlay-rgb), 0.07);
   padding: 1px 6px; border-radius: 4px;
   font-family: "SF Mono", Menlo, Monaco, monospace;
   font-size: 10px;
@@ -512,7 +512,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--overlay-rgb), 0.04);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
@@ -588,7 +588,7 @@
   max-height: 200px;
   overflow-y: auto;
   z-index: 10;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.4);
 }
 
 #add-project-suggestions.hidden { display: none; }
@@ -686,7 +686,7 @@
     90deg,
     var(--accent) 0%,
     var(--accent) 35%,
-    #f0c0a0 50%,
+    var(--accent-hover) 50%,
     var(--accent) 65%,
     var(--accent) 100%
   );

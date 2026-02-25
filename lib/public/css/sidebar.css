@@ -127,7 +127,7 @@
 .ps-count {
   font-size: 11px;
   font-weight: 700;
-  background: rgba(218, 119, 86, 0.15);
+  background: var(--accent-15);
   color: var(--accent);
   border-radius: 10px;
   padding: 2px 8px;
@@ -148,7 +148,7 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 4px 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.4);
   z-index: 120;
   max-height: 320px;
   overflow-y: auto;
@@ -181,11 +181,11 @@
 }
 
 .project-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--overlay-rgb), 0.05);
 }
 
 .project-dropdown-item.current {
-  background: rgba(218, 119, 86, 0.06);
+  background: var(--accent-8);
   border-left-color: var(--accent);
   color: var(--text);
 }
@@ -240,7 +240,7 @@
 
 .pd-remove .lucide { width: 14px; height: 14px; }
 .project-dropdown-item:hover .pd-remove { display: block; }
-.pd-remove:hover { color: var(--error); background: rgba(255, 255, 255, 0.06); }
+.pd-remove:hover { color: var(--error); background: rgba(var(--overlay-rgb), 0.06); }
 
 .project-dropdown-footer {
   border-top: 1px solid var(--border-subtle);
@@ -263,7 +263,7 @@
 }
 
 .project-dropdown-footer button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--overlay-rgb), 0.05);
   color: var(--text-secondary);
 }
 
@@ -280,8 +280,8 @@
   align-items: flex-start;
   gap: 6px;
   border-radius: 8px;
-  background: rgba(218, 119, 86, 0.12);
-  border: 1px solid rgba(218, 119, 86, 0.2);
+  background: var(--accent-12);
+  border: 1px solid var(--accent-20);
 }
 
 #project-hint.hidden {
@@ -295,7 +295,7 @@
 }
 
 .project-hint-text code {
-  background: rgba(218, 119, 86, 0.15);
+  background: var(--accent-15);
   padding: 1px 5px;
   border-radius: 3px;
   font-family: "SF Mono", Menlo, Monaco, monospace;
@@ -416,7 +416,7 @@
 }
 
 .session-item.search-match {
-  background: rgba(218, 119, 86, 0.1);
+  background: var(--accent-12);
   color: var(--text);
 }
 
@@ -429,7 +429,7 @@
 }
 
 .session-highlight {
-  background: rgba(218, 119, 86, 0.3);
+  background: var(--accent-30);
   color: var(--text);
   border-radius: 2px;
   padding: 0 1px;
@@ -525,7 +525,7 @@
 
 .session-more-btn .lucide { width: 14px; height: 14px; }
 .session-item:hover .session-more-btn { display: flex; }
-.session-more-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+.session-more-btn:hover { color: var(--text); background: rgba(var(--overlay-rgb), 0.06); }
 
 /* --- Session context menu --- */
 .session-ctx-menu {
@@ -538,7 +538,7 @@
   border-radius: 10px;
   padding: 4px 0;
   min-width: 140px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.4);
   z-index: 110;
 }
 
@@ -558,10 +558,10 @@
 }
 
 .session-ctx-item .lucide { width: 14px; height: 14px; flex-shrink: 0; }
-.session-ctx-item:hover { background: rgba(255, 255, 255, 0.05); }
+.session-ctx-item:hover { background: rgba(var(--overlay-rgb), 0.05); }
 
 .session-ctx-item.session-ctx-delete { color: var(--error); }
-.session-ctx-item.session-ctx-delete:hover { background: rgba(229, 83, 75, 0.08); }
+.session-ctx-item.session-ctx-delete:hover { background: var(--error-8); }
 
 /* --- Session inline rename --- */
 .session-rename-input {
@@ -638,7 +638,7 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 4px 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.4);
   z-index: 110;
 }
 
@@ -661,7 +661,7 @@
 }
 
 .sidebar-menu-item .lucide { width: 14px; height: 14px; flex-shrink: 0; }
-.sidebar-menu-item:hover { background: rgba(255, 255, 255, 0.05); }
+.sidebar-menu-item:hover { background: rgba(var(--overlay-rgb), 0.05); }
 
 .sidebar-menu-item.has-badge { position: relative; }
 .sidebar-menu-item .menu-badge {
@@ -676,7 +676,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--shadow-rgb), 0.6);
   z-index: 99;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
@@ -727,5 +727,98 @@
 #hamburger-btn .lucide {
   width: 20px;
   height: 20px;
+}
+
+/* --- Theme picker --- */
+.theme-picker {
+  position: fixed;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0;
+  min-width: 220px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(var(--shadow-rgb), 0.5);
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.theme-picker.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.theme-picker-header {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dimmer);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  background: var(--bg-alt);
+  z-index: 1;
+}
+
+.theme-picker-section {
+  padding-bottom: 4px;
+}
+
+.theme-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 14px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.theme-picker-item:hover {
+  background: rgba(var(--overlay-rgb), 0.05);
+}
+
+.theme-picker-item.active {
+  color: var(--text);
+}
+
+.theme-swatches {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.theme-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(var(--overlay-rgb), 0.1);
+}
+
+.theme-picker-label {
+  flex: 1;
+  text-align: left;
+}
+
+.theme-picker-check {
+  font-size: 14px;
+  color: var(--accent);
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.theme-picker-item.active .theme-picker-check {
+  opacity: 1;
 }
 

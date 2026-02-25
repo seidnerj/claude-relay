@@ -26,7 +26,7 @@
   background: var(--bg-alt);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.3);
   overflow: hidden;
 }
 
@@ -38,7 +38,7 @@
   cursor: pointer;
   user-select: none;
 }
-#todo-sticky .todo-sticky-header:hover { background: rgba(255, 255, 255, 0.03); }
+#todo-sticky .todo-sticky-header:hover { background: rgba(var(--overlay-rgb), 0.03); }
 #todo-sticky .todo-sticky-icon { display: inline-flex; color: var(--accent); }
 #todo-sticky .todo-sticky-icon .lucide { width: 14px; height: 14px; }
 #todo-sticky .todo-sticky-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); flex: 1; }
@@ -101,7 +101,7 @@
   cursor: pointer;
   z-index: 10;
   transition: opacity 0.15s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.3);
 }
 #new-msg-btn:hover {
   background: var(--sidebar-hover);
@@ -144,16 +144,16 @@
 }
 
 .msg-assistant:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--overlay-rgb), 0.02);
 }
 
 .msg-assistant.copy-primed {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--overlay-rgb), 0.04);
   cursor: pointer;
 }
 
 .msg-assistant.copy-done {
-  background: rgba(87, 171, 90, 0.06);
+  background: var(--success-8);
 }
 
 .msg-copy-hint {
@@ -197,7 +197,7 @@
 .md-content h3 { font-size: 1.1em; }
 
 .md-content code {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(var(--overlay-rgb), 0.07);
   padding: 2px 7px;
   border-radius: 6px;
   font-family: "SF Mono", "Fira Code", Menlo, Monaco, "Cascadia Code", monospace;
@@ -289,7 +289,7 @@ pre:hover .code-copy-btn { opacity: 1; }
   text-align: start;
 }
 .md-content th {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--overlay-rgb), 0.04);
   font-weight: 600;
 }
 
@@ -340,13 +340,13 @@ pre:hover .code-copy-btn { opacity: 1; }
 }
 
 pre.mermaid-error {
-  border-color: rgba(229, 83, 75, 0.25);
+  border-color: var(--error-25);
 }
 
 /* --- Mermaid Viewer Modal --- */
 #mermaid-modal { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; }
 #mermaid-modal.hidden { display: none; }
-#mermaid-modal .confirm-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0, 0, 0, 0.7); }
+#mermaid-modal .confirm-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(var(--shadow-rgb), 0.7); }
 
 .mermaid-modal-dialog {
   position: relative;
@@ -359,7 +359,7 @@ pre.mermaid-error {
   background: var(--bg-alt);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 24px 80px rgba(var(--shadow-rgb), 0.5);
 }
 
 .mermaid-modal-header {
@@ -395,7 +395,7 @@ pre.mermaid-error {
   transition: color 0.15s, background 0.15s;
 }
 
-.mermaid-modal-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+.mermaid-modal-btn:hover { color: var(--text); background: rgba(var(--overlay-rgb), 0.06); }
 
 .mermaid-modal-body {
   padding: 24px;
@@ -414,7 +414,7 @@ pre.mermaid-error {
 /* --- Image lightbox modal --- */
 #image-modal { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; }
 #image-modal.hidden { display: none; }
-#image-modal .confirm-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0, 0, 0, 0.8); }
+#image-modal .confirm-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(var(--shadow-rgb), 0.8); }
 
 .image-modal-dialog {
   position: relative;
@@ -429,7 +429,7 @@ pre.mermaid-error {
   max-height: 90vh;
   border-radius: 12px;
   object-fit: contain;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 24px 80px rgba(var(--shadow-rgb), 0.6);
 }
 
 .image-modal-close {
@@ -440,7 +440,7 @@ pre.mermaid-error {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--shadow-rgb), 0.5);
   border: none;
   color: #fff;
   cursor: pointer;
@@ -448,7 +448,7 @@ pre.mermaid-error {
   border-radius: 50%;
   transition: background 0.15s;
 }
-.image-modal-close:hover { background: rgba(255, 255, 255, 0.2); }
+.image-modal-close:hover { background: rgba(var(--overlay-rgb), 0.2); }
 
 /* ==========================================================================
    Thinking
@@ -467,13 +467,13 @@ pre.mermaid-error {
   cursor: pointer;
   padding: 6px 12px;
   user-select: none;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--overlay-rgb), 0.03);
   border-radius: 8px;
   transition: background 0.15s;
 }
 
 .thinking-header:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--overlay-rgb), 0.06);
 }
 
 .thinking-chevron {
@@ -525,7 +525,7 @@ pre.mermaid-error {
   word-break: break-word;
   max-height: 300px;
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--overlay-rgb), 0.02);
   border-radius: 8px;
 }
 
@@ -548,7 +548,7 @@ pre.mermaid-error {
   padding: 8px 12px;
   cursor: pointer;
   user-select: none;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--overlay-rgb), 0.025);
   border-radius: 10px;
   transition: background 0.15s;
 }
@@ -570,7 +570,7 @@ pre.mermaid-error {
 }
 
 .tool-header:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--overlay-rgb), 0.05);
 }
 
 .tool-bullet {
@@ -714,21 +714,21 @@ pre.mermaid-error {
 }
 
 .diff-content .diff-add {
-  color: #3FB950;
-  background: rgba(63, 185, 80, 0.08);
+  color: var(--success);
+  background: var(--success-8);
   display: inline-block;
   width: 100%;
 }
 
 .diff-content .diff-del {
-  color: #F85149;
-  background: rgba(248, 81, 73, 0.08);
+  color: var(--error);
+  background: var(--error-8);
   display: inline-block;
   width: 100%;
 }
 
-.diff-content .diff-hunk { color: #8B949E; font-style: italic; }
-.diff-content .diff-file-header { color: #8B949E; font-weight: 600; }
+.diff-content .diff-hunk { color: var(--text-muted); font-style: italic; }
+.diff-content .diff-file-header { color: var(--text-muted); font-weight: 600; }
 .diff-content .diff-ctx { color: var(--text-muted); }
 
 /* --- Edit diff viewer --- */
@@ -739,7 +739,7 @@ pre.mermaid-error {
   font-size: 12px;
   font-family: "SF Mono", Menlo, Monaco, monospace;
   color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--overlay-rgb), 0.03);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -880,7 +880,7 @@ pre.mermaid-error {
   gap: 8px;
   padding: 12px 16px;
   background: var(--accent-bg);
-  border: 1px solid rgba(218, 119, 86, 0.2);
+  border: 1px solid var(--accent-20);
   border-radius: 12px 12px 0 0;
   cursor: pointer;
   user-select: none;
@@ -900,7 +900,7 @@ pre.mermaid-error {
 
 .plan-card-body {
   padding: 16px 18px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--overlay-rgb), 0.02);
   border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 12px 12px;
@@ -918,7 +918,7 @@ pre.mermaid-error {
 .plan-card-body h1 { font-size: 1.3em; }
 .plan-card-body h2 { font-size: 1.15em; }
 .plan-card-body h3 { font-size: 1.05em; }
-.plan-card-body code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", Menlo, Monaco, monospace; font-size: 0.88em; }
+.plan-card-body code { background: rgba(var(--overlay-rgb),0.06); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", Menlo, Monaco, monospace; font-size: 0.88em; }
 .plan-card-body pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; }
 .plan-card-body pre code { display: block; padding: 10px 12px; overflow-x: auto; font-size: 12px; line-height: 1.5; background: none; border-radius: 0; }
 .plan-card-body ul, .plan-card-body ol { padding-left: 22px; margin: 6px 0; }
@@ -928,8 +928,8 @@ pre.mermaid-error {
 
 /* --- Plan permission (ExitPlanMode) --- */
 .plan-permission-header {
-  background: rgba(87, 171, 90, 0.08) !important;
-  border-color: rgba(87, 171, 90, 0.2) !important;
+  background: var(--success-8) !important;
+  border-color: var(--success-25) !important;
 }
 .plan-permission-header .permission-icon { color: var(--success) !important; }
 .plan-permission-header .permission-title { color: var(--success) !important; }
@@ -949,7 +949,7 @@ pre.mermaid-error {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--overlay-rgb), 0.03);
   border: 1px solid var(--border);
   border-radius: 12px 12px 0 0;
 }

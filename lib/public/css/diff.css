@@ -51,19 +51,19 @@
 
 /* --- Unified diff row colors --- */
 .diff-row-remove {
-  background: rgba(229, 83, 75, 0.12);
+  background: var(--error-12);
 }
 
 .diff-row-remove .diff-marker {
-  color: var(--diff-remove, #E5534B);
+  color: var(--error);
 }
 
 .diff-row-add {
-  background: rgba(87, 171, 90, 0.12);
+  background: var(--success-12);
 }
 
 .diff-row-add .diff-marker {
-  color: var(--diff-add, #57AB5A);
+  color: var(--success);
 }
 
 /* --- Hunk header row (patch diffs) --- */
@@ -92,12 +92,12 @@
 /* Split: change rows */
 .diff-row-change .diff-code-old,
 .diff-row-remove .diff-code-old {
-  background: rgba(229, 83, 75, 0.12);
+  background: var(--error-12);
 }
 
 .diff-row-change .diff-code-new,
 .diff-row-add .diff-code-new {
-  background: rgba(87, 171, 90, 0.12);
+  background: var(--success-12);
 }
 
 /* Empty cells in split view */
