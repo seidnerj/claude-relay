@@ -842,6 +842,53 @@ pre.mermaid-error {
 }
 
 /* ==========================================================================
+   Sub-agent Log (Task tool)
+   ========================================================================== */
+
+.subagent-log {
+  margin: 4px 0 4px 24px;
+  padding: 4px 0;
+  border-left: 2px solid var(--border-subtle);
+  padding-left: 12px;
+  max-height: 68px;
+  overflow-y: auto;
+}
+
+.subagent-log-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.subagent-log-bullet {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-dimmer);
+  flex-shrink: 0;
+}
+
+.subagent-log-tool {
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.subagent-log-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "SF Mono", Menlo, Monaco, monospace;
+  font-size: 11px;
+}
+
+/* ==========================================================================
    Plan Mode
    ========================================================================== */
 
