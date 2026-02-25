@@ -18,13 +18,48 @@
   min-width: 0;
 }
 
-.project-name {
+.header-title {
   font-weight: 600;
   font-size: 15px;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#header-rename-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-dimmer);
+  cursor: pointer;
+  border-radius: 6px;
+  flex-shrink: 0;
+  padding: 0;
+  margin-left: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+#header-left:hover #header-rename-btn { display: flex; }
+#header-rename-btn:hover { color: var(--text); background: rgba(var(--overlay-rgb), 0.06); }
+#header-rename-btn .lucide { width: 13px; height: 13px; }
+
+.header-rename-input {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--input-bg);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+  flex: 1;
 }
 
 .status {

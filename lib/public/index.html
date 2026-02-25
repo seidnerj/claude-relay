@@ -15,6 +15,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Styrene+A+Web:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/file-icons-js@1/css/style.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5/css/xterm.min.css">
+<script>
+(function(){try{var k="claude-relay-theme-vars",v=localStorage.getItem(k);if(!v)return;var o=JSON.parse(v),r=document.documentElement,p;for(p in o)r.style.setProperty(p,o[p]);var vt=localStorage.getItem(k.replace("-vars","-variant"));if(vt==="light"){r.classList.add("light-theme");r.classList.remove("dark-theme")}else{r.classList.add("dark-theme");r.classList.remove("light-theme")}var m=document.querySelector('meta[name="theme-color"]');if(m&&o["--bg"])m.setAttribute("content",o["--bg"])}catch(e){}})();
+</script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,51 +30,56 @@
       <button id="sidebar-toggle-btn" title="Close sidebar"><i data-lucide="panel-left-close"></i></button>
     </div>
     <nav id="sidebar-nav">
-      <div id="project-switcher">
-        <button id="project-switcher-btn" type="button">
-          <div id="project-switcher-label">
-            <span class="ps-title">Projects</span>
-            <div class="ps-current">
-              <span id="project-switcher-name"></span>
-              <span id="project-switcher-count" class="ps-count"></span>
-            </div>
-          </div>
-          <i data-lucide="chevron-down" class="ps-chevron"></i>
-        </button>
-        <div id="project-dropdown" class="hidden">
-          <div class="project-dropdown-header">Projects</div>
-          <div id="project-dropdown-list"></div>
-          <div class="project-dropdown-footer">
-            <button id="project-dropdown-add" type="button"><i data-lucide="plus"></i> <span>Add project</span></button>
-          </div>
+      <div id="project-list-section">
+        <div id="project-list-header">
+          <span class="project-list-title">Projects</span>
+          <button id="project-list-add" type="button" title="Add project"><i data-lucide="plus"></i></button>
         </div>
+        <div id="project-list"></div>
       </div>
       <div id="project-hint" class="hidden">
         <span class="project-hint-text">Run <code>npx claude-relay</code> in other directories to add more projects.</span>
         <button id="project-hint-dismiss" type="button" aria-label="Dismiss"><i data-lucide="x"></i></button>
       </div>
     </nav>
-    <div id="sidebar-panel-sessions" class="sidebar-panel">
+    <div id="sidebar-tools">
+      <div class="sidebar-section-header">
+        <span class="sidebar-section-title">Tools</span>
+      </div>
       <div id="session-actions">
-        <button id="new-session-btn"><i data-lucide="plus"></i> <span>New session</span></button>
         <button id="resume-session-btn" title="Resume a CLI session"><i data-lucide="terminal"></i> <span>Resume CLI</span></button>
         <button id="file-browser-btn"><i data-lucide="folder-tree"></i> <span>File browser</span></button>
         <button id="terminal-sidebar-btn"><i data-lucide="square-terminal"></i> <span>Terminal</span></button>
       </div>
-      <div class="session-list-header">
-        <span>Sessions</span>
-        <button id="search-session-btn" type="button" title="Search sessions"><i data-lucide="search"></i></button>
+    </div>
+    <div id="sidebar-sessions-header">
+      <div id="sessions-header-content">
+        <div class="session-list-header">
+          <span>Sessions</span>
+          <div class="session-list-header-actions">
+            <button id="new-session-btn" type="button" title="New session"><i data-lucide="plus"></i></button>
+            <button id="search-session-btn" type="button" title="Search sessions"><i data-lucide="search"></i></button>
+          </div>
+        </div>
+        <div id="session-search" class="hidden">
+          <input id="session-search-input" type="text" placeholder="Search sessions..." autocomplete="off" spellcheck="false" />
+          <button id="session-search-clear" type="button" aria-label="Clear search"><i data-lucide="x"></i></button>
+        </div>
       </div>
-      <div id="session-search" class="hidden">
-        <input id="session-search-input" type="text" placeholder="Search sessions..." autocomplete="off" spellcheck="false" />
+      <div id="files-header-content" class="hidden">
+        <div class="session-list-header">
+          <span>File Browser</span>
+          <div class="session-list-header-actions">
+            <button id="file-panel-refresh" type="button" title="Refresh file tree"><i data-lucide="refresh-cw"></i></button>
+            <button id="file-panel-close" type="button" title="Close file browser"><i data-lucide="x"></i></button>
+          </div>
+        </div>
       </div>
+    </div>
+    <div id="sidebar-panel-sessions" class="sidebar-panel">
       <div id="session-list"></div>
     </div>
     <div id="sidebar-panel-files" class="sidebar-panel hidden">
-      <div id="file-panel-header">
-        <button id="file-panel-back" type="button"><i data-lucide="arrow-left"></i> <span>Sessions</span></button>
-        <button id="file-panel-refresh" type="button" title="Refresh file tree"><i data-lucide="refresh-cw"></i></button>
-      </div>
       <div id="file-tree"></div>
     </div>
     <div id="sidebar-footer">
@@ -81,7 +89,7 @@
       </button>
       <div id="sidebar-footer-menu" class="hidden">
         <a class="sidebar-menu-item" href="https://github.com/chadbyte/claude-relay" target="_blank" rel="noopener">
-          <i data-lucide="github"></i> <span>GitHub</span>
+          <i data-lucide="star"></i> <span>Star on GitHub</span>
         </a>
         <button class="sidebar-menu-item" id="footer-theme">
           <i data-lucide="palette"></i> <span>Theme</span>
@@ -114,7 +122,8 @@
       <div id="header-left">
         <button id="sidebar-expand-btn" title="Open sidebar"><i data-lucide="panel-left-open"></i></button>
         <button id="hamburger-btn" aria-label="Toggle sidebar"><i data-lucide="menu"></i></button>
-        <span class="project-name" id="project-name">Connecting...</span>
+        <span class="header-title" id="header-title">Connecting...</span>
+        <button id="header-rename-btn" type="button" title="Rename session"><i data-lucide="pencil"></i></button>
       </div>
       <div class="status">
         <div id="debug-menu-wrap" class="hidden">
@@ -297,7 +306,7 @@
       <div id="terminal-tabs" class="terminal-tabs"></div>
       <button class="terminal-new-tab-btn" id="terminal-new-tab" title="New tab"><i data-lucide="plus"></i></button>
       <div class="terminal-header-actions">
-        <button class="file-viewer-btn" id="terminal-close" title="Hide panel"><i data-lucide="chevron-down"></i></button>
+        <button class="file-viewer-btn" id="terminal-close" title="Hide panel"><i data-lucide="chevron-up"></i></button>
       </div>
     </div>
     <div id="terminal-toolbar" class="hidden">
