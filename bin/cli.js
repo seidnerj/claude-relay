@@ -1080,7 +1080,7 @@ function hasMkcert() {
 // ==============================
 // Restore projects from ~/.clayrc
 // ==============================
-function promptRestoreProjects(projects, callback) {
+function promptRestoreProjects(projects, currentCwd, callback) {
   log(sym.bar);
   log(sym.pointer + "  " + a.bold + "Previous projects found" + a.reset);
   log(sym.bar + "  " + a.dim + "Restore projects from your last session?" + a.reset);
@@ -1088,8 +1088,10 @@ function promptRestoreProjects(projects, callback) {
 
   var items = projects.map(function (p) {
     var name = p.title || path.basename(p.path);
+    var isCwd = p.path === currentCwd;
+    var cwdTag = isCwd ? "  " + a.cyan + "(current dir)" + a.reset : "";
     return {
-      label: a.bold + name + a.reset + "  " + a.dim + p.path + a.reset,
+      label: a.bold + name + a.reset + cwdTag + "  " + a.dim + p.path + a.reset,
       value: p,
       checked: true,
     };
@@ -1188,7 +1190,7 @@ function setup(callback) {
 // ==============================
 // Fork the daemon process
 // ==============================
-async function forkDaemon(pin, keepAwake, extraProjects, addCwd) {
+async function forkDaemon(pin, keepAwake, extraProjects, cwdOfferedInRestore) {
   var ip = getLocalIP();
   var hasTls = false;
 
@@ -1211,20 +1213,19 @@ async function forkDaemon(pin, keepAwake, extraProjects, addCwd) {
   }
 
   var allProjects = [];
-  var usedSlugs = [];
 
-  // Only include cwd if explicitly requested
-  if (addCwd) {
+  // Auto-add cwd only when: not in bare mode AND not offered in the restore prompt.
+  // If offered in the restore prompt, the user's selection (via extraProjects) controls it.
+  if (!bare && !cwdOfferedInRestore) {
     var slug = generateSlug(cwd, []);
-    allProjects.push({ path: cwd, slug: slug, addedAt: Date.now() });
-    usedSlugs.push(slug);
+    allProjects = [{ path: cwd, slug: slug, addedAt: Date.now() }];
   }
 
-  // Add restored projects (from ~/.clayrc)
+  // Add restored/selected projects (from ~/.clayrc)
   if (extraProjects && extraProjects.length > 0) {
+    var usedSlugs = allProjects.map(function (p) { return p.slug; });
     for (var ep = 0; ep < extraProjects.length; ep++) {
       var rp = extraProjects[ep];
-      if (rp.path === cwd) continue; // skip if same as cwd
       if (!fs.existsSync(rp.path)) continue; // skip missing directories
       var rpSlug = generateSlug(rp.path, usedSlugs);
       usedSlugs.push(rpSlug);
@@ -2269,14 +2270,14 @@ var currentVersion = require("../package.json").version;
         console.log("  " + sym.warn + "  " + a.yellow + "Skip permissions mode enabled" + a.reset);
       }
       var autoRc = loadClayrc();
+      var autoCwdInClayrc = (autoRc.recentProjects || []).some(function (p) { return p.path === cwd; });
       var autoRestorable = (autoRc.recentProjects || []).filter(function (p) {
-        return p.path !== cwd && fs.existsSync(p.path);
+        return fs.existsSync(p.path);
       });
       if (autoRestorable.length > 0) {
         console.log("  " + sym.done + "  Restoring " + autoRestorable.length + " previous project(s)");
       }
-      var hasRestorable = autoRestorable.length > 0;
-      await forkDaemon(pin, false, hasRestorable ? autoRestorable : undefined, !hasRestorable);
+      await forkDaemon(pin, false, autoRestorable.length > 0 ? autoRestorable : undefined, autoCwdInClayrc);
     } else {
       setup(function (pin, keepAwake) {
         if (dangerouslySkipPermissions && !pin) {
@@ -2286,21 +2287,23 @@ var currentVersion = require("../package.json").version;
           return;
         }
 
-        // Check ~/.clayrc for previous projects to restore
+        // Check ~/.clayrc for previous projects to restore.
+        // Include cwd if it was previously registered — let the user decide.
         var rc = loadClayrc();
+        var cwdInClayrc = (rc.recentProjects || []).some(function (p) { return p.path === cwd; });
         var restorable = (rc.recentProjects || []).filter(function (p) {
-          return p.path !== cwd && fs.existsSync(p.path);
+          return fs.existsSync(p.path);
         });
 
         if (restorable.length > 0) {
-          promptRestoreProjects(restorable, function (selected) {
-            forkDaemon(pin, keepAwake, selected, false);
+          promptRestoreProjects(restorable, cwd, function (selected) {
+            forkDaemon(pin, keepAwake, selected, cwdInClayrc);
           });
         } else {
           log(sym.bar);
           log(sym.end + "  " + a.dim + "Starting relay..." + a.reset);
           log("");
-          forkDaemon(pin, keepAwake, undefined, true);
+          forkDaemon(pin, keepAwake, undefined, false);
         }
       });
     }
